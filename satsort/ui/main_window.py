@@ -27,6 +27,14 @@ from ..i18n import i18n, t
 from .channel_table import ChannelTableWidget
 from .search_bar import SearchBarWidget
 from .sidebar import SidebarWidget
+from .dialogs import (
+    MovePositionDialog,
+    RenameChannelDialog,
+    ImportChannelsDialog,
+    CompareFilesDialog,
+    LanguageSelectionDialog,
+    AboutDialog,
+)
 
 
 class MainWindow(QMainWindow):
@@ -135,9 +143,11 @@ class MainWindow(QMainWindow):
         # 3. Tools Menu
         self.menu_tools = menu_bar.addMenu(t("T103"))  # Çoklu İşlemler
         self.act_compare = QAction("📊 " + t("T104"), self)  # Karşılaştırma
+        self.act_compare.triggered.connect(self._open_compare_dialog)
         self.menu_tools.addAction(self.act_compare)
 
         self.act_import = QAction("📥 " + t("T105"), self)  # Farklı Dosyadan Kopyalama
+        self.act_import.triggered.connect(self._open_import_dialog)
         self.menu_tools.addAction(self.act_import)
 
         # 4. View Menu
@@ -198,6 +208,9 @@ class MainWindow(QMainWindow):
     def _connect_signals(self) -> None:
         self.channel_table.channels_updated.connect(self._update_channel_counts)
         self.channel_table.channel_selected.connect(self._on_channel_selected)
+        self.channel_table.request_rename.connect(self._on_request_rename)
+        self.channel_table.request_move.connect(self._on_request_move)
+        self.channel_table.request_swap.connect(self._on_request_swap)
         self.sidebar.transponder_channel_clicked.connect(self._on_transponder_channel_clicked)
         self.search_bar.text_changed.connect(self._on_search_text_changed)
         self.search_bar.search_confirmed.connect(self._on_search_confirmed)
@@ -213,6 +226,80 @@ class MainWindow(QMainWindow):
             self.channel_table.selectRow(row)
         except ValueError:
             pass
+
+    def _on_request_rename(self, row: int, channel: Channel) -> None:
+        dlg = RenameChannelDialog(channel.channel_name, self)
+        if dlg.exec():
+            new_name = dlg.get_channel_name()
+            self.channel_table.update_channel_name_at(row, new_name)
+
+    def _on_request_move(self, is_checked: bool) -> None:
+        channels = self.channel_table.get_channels()
+        if not channels:
+            return
+
+        title = t("T114") if is_checked else t("T113")
+        dlg = MovePositionDialog(title, len(channels), parent=self)
+        if dlg.exec():
+            target_idx = dlg.get_target_index()
+            if is_checked:
+                self.channel_table.move_checked_channels(target_idx)
+            else:
+                sel_rows = self.channel_table.get_selected_row_indices()
+                if sel_rows:
+                    self.channel_table.move_channel(sel_rows[0], target_idx)
+
+    def _on_request_swap(self, source_row: int) -> None:
+        channels = self.channel_table.get_channels()
+        if not channels:
+            return
+
+        dlg = MovePositionDialog(t("T115"), len(channels), initial_pos=source_row + 1, parent=self)
+        if dlg.exec():
+            target_idx = dlg.get_target_index()
+            self.channel_table.swap_channels(source_row, target_idx)
+
+    def _open_import_dialog(self) -> None:
+        dlg = ImportChannelsDialog(self)
+        if dlg.exec():
+            imported = dlg.get_selected_channels()
+            if imported:
+                current = self.channel_table.get_channels()
+                for ch in reversed(imported):
+                    ch.is_checked = True
+                    current.insert(0, ch)
+                self.channel_table.set_channels(current)
+                QMessageBox.information(self, "SatSort", f"{len(imported)} {t('T143')}")
+
+    def _open_compare_dialog(self) -> None:
+        current = self.channel_table.get_channels()
+        if not current:
+            QMessageBox.warning(self, "SatSort", t("T145"))
+            return
+
+        dlg = CompareFilesDialog(current, self)
+        dlg.apply_removals.connect(self._on_apply_removals)
+        dlg.apply_additions.connect(self._on_apply_additions)
+        dlg.exec()
+
+    def _on_apply_removals(self, channels_to_remove: List[Channel]) -> None:
+        current = self.channel_table.get_channels()
+        keys_to_remove = {
+            (ch.channel_name.lower(), ch.frequency, ch.polarization.value, ch.symbol_rate)
+            for ch in channels_to_remove
+        }
+        remaining = [
+            ch for ch in current
+            if (ch.channel_name.lower(), ch.frequency, ch.polarization.value, ch.symbol_rate) not in keys_to_remove
+        ]
+        self.channel_table.set_channels(remaining)
+
+    def _on_apply_additions(self, channels_to_add: List[Channel]) -> None:
+        current = self.channel_table.get_channels()
+        for ch in reversed(channels_to_add):
+            ch.is_checked = True
+            current.insert(0, ch)
+        self.channel_table.set_channels(current)
 
     def _update_channel_counts(self) -> None:
         channels = self.channel_table.get_channels()
@@ -232,7 +319,6 @@ class MainWindow(QMainWindow):
         self.search_bar.set_match_count(match_count, len(channels))
 
     def _on_search_confirmed(self, text: str) -> None:
-        """Marks matching channels as checked (mimics original Form1 behavior)."""
         channels = self.channel_table.get_channels()
         lower_q = text.lower()
         match_count = 0
@@ -306,17 +392,12 @@ class MainWindow(QMainWindow):
         self.sidebar.setVisible(visible)
 
     def show_about(self) -> None:
-        about_text = (
-            "<h3>SatSort v1.0.0</h3>"
-            "<p>Linux Native SatcoDX (.sdx) Uydu Kanal Listesi Düzenleyici.</p>"
-            "<p><i>Mehmet Taşköprü tarafından geliştirilen NovaSatcoDX projesinden esinlenilerek "
-            "Linux platformu için sıfırdan Python ve Qt6 ile geliştirilmiştir.</i></p>"
-        )
-        QMessageBox.about(self, t("T106"), about_text)
+        AboutDialog(self).exec()
 
     def _on_language_changed(self, new_lang: str) -> None:
         """Updates all UI text dynamically when language is switched."""
         self._rebuild_language_menu()
         self.channel_table.set_channels(self.channel_table.get_channels())
         self._update_channel_counts()
+
 
