@@ -345,17 +345,8 @@ class MainWindow(QMainWindow):
         self.search_bar.set_match_count(match_count, len(channels))
 
     def _on_search_confirmed(self, text: str) -> None:
-        channels = self.channel_table.get_channels()
-        lower_q = text.lower()
-        match_count = 0
-
-        for ch in channels:
-            if lower_q in ch.channel_name.lower():
-                ch.is_checked = True
-                match_count += 1
-
-        self.channel_table.set_channels(channels)
-        self.search_bar.set_match_count(match_count, len(channels))
+        match_count = self.channel_table.mark_matching_channels(text)
+        self.search_bar.set_match_count(match_count, len(self.channel_table.get_channels()))
 
         if match_count == 0:
             self.status_bar.showMessage(t("T142"), 4000)  # Kanal bulunamadı

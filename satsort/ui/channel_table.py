@@ -323,14 +323,58 @@ class ChannelTableWidget(QTableWidget):
         self.set_channels(self._channels)
 
     def uncheck_all(self) -> None:
-        for ch in self._channels:
+        self._is_updating = True
+        for row, ch in enumerate(self._channels):
             ch.is_checked = False
-        self.set_channels(self._channels)
+            item = self.item(row, self.COL_CHECK)
+            if item:
+                item.setCheckState(Qt.Unchecked)
+            self._update_row_visual(row, False)
+        self._is_updating = False
+        self.channels_updated.emit()
 
     def check_all(self) -> None:
-        for ch in self._channels:
+        self._is_updating = True
+        for row, ch in enumerate(self._channels):
             ch.is_checked = True
-        self.set_channels(self._channels)
+            item = self.item(row, self.COL_CHECK)
+            if item:
+                item.setCheckState(Qt.Checked)
+            self._update_row_visual(row, True)
+        self._is_updating = False
+        self.channels_updated.emit()
+
+    def mark_matching_channels(self, query: str) -> int:
+        """Marks matching channels as checked in-place without rebuilding the table."""
+        lower_q = query.strip().lower()
+        if not lower_q:
+            return 0
+
+        self._is_updating = True
+        match_count = 0
+        first_match_row = -1
+
+        for row, ch in enumerate(self._channels):
+            if lower_q in ch.channel_name.lower():
+                ch.is_checked = True
+                match_count += 1
+                if first_match_row == -1:
+                    first_match_row = row
+                item = self.item(row, self.COL_CHECK)
+                if item:
+                    item.setCheckState(Qt.Checked)
+                self._update_row_visual(row, True)
+
+        self._is_updating = False
+        self.channels_updated.emit()
+
+        if first_match_row != -1:
+            self.selectRow(first_match_row)
+            first_item = self.item(first_match_row, 0)
+            if first_item:
+                self.scrollToItem(first_item)
+
+        return match_count
 
     def update_channel_name_at(self, row: int, new_name: str) -> None:
         if 0 <= row < len(self._channels):
