@@ -42,8 +42,7 @@ htmlcov/
 *.swp
 *.swo
 
-# Legacy Windows Source build artifacts
-NovaSatcoDx_SourceCode./bin/
-NovaSatcoDx_SourceCode./obj/
-*.suo
-*.user
+# Legacy Windows Source Code Directory
+NovaSatcoDx_SourceCode*/
+NovaSatcoDx_SourceCode.
+
