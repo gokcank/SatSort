@@ -309,6 +309,22 @@ class TestComprehensiveSatSort(unittest.TestCase):
         search_bar.clear()
         self.assertEqual(search_bar.get_text(), "")
 
+    def test_drag_and_drop_after_search(self):
+        search_bar = self.win.search_bar
+        table = self.win.channel_table
+
+        # Search for TRT and confirm
+        search_bar._search_input.setText("TRT")
+        self.win._on_search_confirmed("TRT")
+
+        # Select row 0 (TRT 1 HD) and move it down to index 2
+        table.selectRow(0)
+        table.move_channel(0, 2)
+
+        channels = table.get_channels()
+        self.assertEqual(channels[2].channel_name, "TRT 1 HD")
+        self.assertEqual(channels[0].channel_name, "TRT HABER HD")
+
     # -------------------------------------------------------------
     # 4. SIDEBAR & TRANSPONDER SYNCHRONIZATION
     # -------------------------------------------------------------

@@ -358,11 +358,9 @@ class MainWindow(QMainWindow):
         self.search_bar.set_match_count(match_count, len(channels))
 
         if match_count == 0:
-            QMessageBox.information(self, "SatSort", t("T142"))  # Kanal bulunamadı
+            self.status_bar.showMessage(t("T142"), 4000)  # Kanal bulunamadı
         else:
-            QMessageBox.information(
-                self, "SatSort", f"{match_count} {t('T143')}"  # X Kanal bulundu ve işaretlendi
-            )
+            self.status_bar.showMessage(f"{match_count} {t('T143')}", 4000)  # X Kanal bulundu ve işaretlendi
 
     def _on_search_cleared(self) -> None:
         self.search_bar.set_match_count(0, len(self.channel_table.get_channels()))

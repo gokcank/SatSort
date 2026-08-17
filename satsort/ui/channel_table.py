@@ -5,7 +5,7 @@ SatSort - Advanced Channel Table Widget with Drag-and-Drop & Context Menu
 from __future__ import annotations
 from typing import List, Optional
 
-from PySide6.QtCore import Qt, Signal, QPoint
+from PySide6.QtCore import Qt, Signal, QPoint, QTimer
 from PySide6.QtGui import QColor, QFont, QAction, QIcon
 from PySide6.QtWidgets import (
     QTableWidget,
@@ -382,7 +382,7 @@ class ChannelTableWidget(QTableWidget):
             target_row -= 1
 
         if source_row != target_row:
-            self.move_channel(source_row, target_row)
+            QTimer.singleShot(0, lambda s=source_row, t=target_row: self.move_channel(s, t))
 
         event.accept()
 
