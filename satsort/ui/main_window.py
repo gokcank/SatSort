@@ -26,6 +26,7 @@ from ..core.parser import read_sdx_file, write_sdx_file, validate_channel_name
 from ..i18n import i18n, t
 from .channel_table import ChannelTableWidget
 from .search_bar import SearchBarWidget
+from .sidebar import SidebarWidget
 
 
 class MainWindow(QMainWindow):
@@ -73,14 +74,9 @@ class MainWindow(QMainWindow):
 
         self._splitter.addWidget(left_container)
 
-        # Right Sidebar Placeholder (will be extended in Phase 4)
-        self._sidebar_container = QWidget()
-        self._sidebar_layout = QVBoxLayout(self._sidebar_container)
-        self._sidebar_layout.setContentsMargins(0, 0, 0, 0)
-        self._sidebar_container.setMinimumWidth(300)
-        self._sidebar_container.setVisible(True)
-
-        self._splitter.addWidget(self._sidebar_container)
+        # Right Sidebar (Parameters + Transponder Packages)
+        self.sidebar = SidebarWidget()
+        self._splitter.addWidget(self.sidebar)
         self._splitter.setStretchFactor(0, 3)
         self._splitter.setStretchFactor(1, 1)
 
@@ -201,14 +197,30 @@ class MainWindow(QMainWindow):
 
     def _connect_signals(self) -> None:
         self.channel_table.channels_updated.connect(self._update_channel_counts)
+        self.channel_table.channel_selected.connect(self._on_channel_selected)
+        self.sidebar.transponder_channel_clicked.connect(self._on_transponder_channel_clicked)
         self.search_bar.text_changed.connect(self._on_search_text_changed)
         self.search_bar.search_confirmed.connect(self._on_search_confirmed)
         self.search_bar.clear_requested.connect(self._on_search_cleared)
+
+    def _on_channel_selected(self, channel: Channel) -> None:
+        self.sidebar.set_channel(channel, self.channel_table.get_channels())
+
+    def _on_transponder_channel_clicked(self, channel: Channel) -> None:
+        channels = self.channel_table.get_channels()
+        try:
+            row = channels.index(channel)
+            self.channel_table.selectRow(row)
+        except ValueError:
+            pass
 
     def _update_channel_counts(self) -> None:
         channels = self.channel_table.get_channels()
         checked_count = len([ch for ch in channels if ch.is_checked])
         self.lbl_channel_count.setText(f"{t('T118')}: {len(channels)} | İşaretli: {checked_count}")
+        selected_ch = self.channel_table.get_selected_channel()
+        if selected_ch:
+            self.sidebar.set_channel(selected_ch, channels)
 
     def _on_search_text_changed(self, text: str) -> None:
         channels = self.channel_table.get_channels()
@@ -261,6 +273,8 @@ class MainWindow(QMainWindow):
             self.setWindowTitle(f"SatSort - {os.path.basename(file_path)}")
             self.lbl_file_info.setText(f"Açık Dosya: {file_path}")
             self.status_bar.showMessage(f"{len(channels)} {t('T118')} yüklendi.", 4000)
+            if channels:
+                self.channel_table.selectRow(0)
         except Exception as e:
             QMessageBox.critical(self, "Hata", f"Dosya açılamadı: {e}")
 
@@ -289,7 +303,7 @@ class MainWindow(QMainWindow):
             QMessageBox.critical(self, "Hata", f"Dosya kaydedilemedi: {e}")
 
     def toggle_sidebar(self, visible: bool) -> None:
-        self._sidebar_container.setVisible(visible)
+        self.sidebar.setVisible(visible)
 
     def show_about(self) -> None:
         about_text = (
@@ -305,3 +319,4 @@ class MainWindow(QMainWindow):
         self._rebuild_language_menu()
         self.channel_table.set_channels(self.channel_table.get_channels())
         self._update_channel_counts()
+
