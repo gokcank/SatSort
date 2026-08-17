@@ -7,7 +7,7 @@ import os
 from typing import List, Optional
 
 from PySide6.QtCore import Qt, QSize
-from PySide6.QtGui import QAction, QKeySequence
+from PySide6.QtGui import QAction, QKeySequence, QActionGroup
 from PySide6.QtWidgets import (
     QMainWindow,
     QWidget,
@@ -158,9 +158,24 @@ class MainWindow(QMainWindow):
         self.act_toggle_sidebar.toggled.connect(self.toggle_sidebar)
         self.menu_view.addAction(self.act_toggle_sidebar)
 
-        self.act_toggle_theme = QAction(self._get_theme_action_text(), self)
-        self.act_toggle_theme.triggered.connect(self._on_toggle_theme)
-        self.menu_view.addAction(self.act_toggle_theme)
+        # Theme Submenu
+        self.menu_theme = self.menu_view.addMenu("🎨 Tema")
+        self.theme_action_group = QActionGroup(self)
+        self.theme_action_group.setExclusive(True)
+
+        current_theme = get_current_theme()
+
+        self.act_dark_theme = QAction("🌙 Koyu Tema", self, checkable=True)
+        self.act_dark_theme.setChecked(current_theme == "dark")
+        self.act_dark_theme.triggered.connect(lambda: self._set_theme("dark"))
+        self.theme_action_group.addAction(self.act_dark_theme)
+        self.menu_theme.addAction(self.act_dark_theme)
+
+        self.act_light_theme = QAction("☀️ Açık Tema", self, checkable=True)
+        self.act_light_theme.setChecked(current_theme == "light")
+        self.act_light_theme.triggered.connect(lambda: self._set_theme("light"))
+        self.theme_action_group.addAction(self.act_light_theme)
+        self.menu_theme.addAction(self.act_light_theme)
 
         # 5. Language Menu
         self.menu_lang = menu_bar.addMenu("🌐 " + t("T168"))
@@ -191,7 +206,6 @@ class MainWindow(QMainWindow):
         self.toolbar.addAction(self.act_import)
         self.toolbar.addSeparator()
         self.toolbar.addAction(self.act_toggle_sidebar)
-        self.toolbar.addAction(self.act_toggle_theme)
 
     def _rebuild_language_menu(self) -> None:
         self.menu_lang.clear()
@@ -397,16 +411,14 @@ class MainWindow(QMainWindow):
     def toggle_sidebar(self, visible: bool) -> None:
         self.sidebar.setVisible(visible)
 
-    def _get_theme_action_text(self) -> str:
-        current = get_current_theme()
-        return "☀️ Açık Tema" if current == "dark" else "🌙 Koyu Tema"
-
-    def _on_toggle_theme(self) -> None:
+    def _set_theme(self, theme_name: str) -> None:
         from PySide6.QtWidgets import QApplication
         app = QApplication.instance()
         if app:
-            new_theme = toggle_theme(app)
-            self.act_toggle_theme.setText(self._get_theme_action_text())
+            from .theme import apply_theme
+            apply_theme(app, theme_name)
+            self.act_dark_theme.setChecked(theme_name == "dark")
+            self.act_light_theme.setChecked(theme_name == "light")
             # Refresh channel table row backgrounds
             self.channel_table.set_channels(self.channel_table.get_channels())
 
