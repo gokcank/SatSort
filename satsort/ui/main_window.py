@@ -95,19 +95,24 @@ class MainWindow(QMainWindow):
 
         # 1. File Menu
         self.menu_file = menu_bar.addMenu(t("T100"))  # Menü / Menu
-        self.act_open = QAction("📂 " + t("T101"), self)  # SatcoDx Yükle
+        self.act_open = QAction("📂 Listeyi Aç", self)
         self.act_open.setShortcut(QKeySequence.Open)
         self.act_open.triggered.connect(self.open_file)
         self.menu_file.addAction(self.act_open)
 
-        self.act_save = QAction("💾 " + t("T102"), self)  # Kaydet
+        self.act_save = QAction("💾 Listeyi Kaydet", self)
         self.act_save.setShortcut(QKeySequence.Save)
         self.act_save.triggered.connect(self.save_file)
         self.menu_file.addAction(self.act_save)
 
+        self.act_close_list = QAction("❌ Listeyi Kapat", self)
+        self.act_close_list.setShortcut(QKeySequence.Close)
+        self.act_close_list.triggered.connect(self.close_file)
+        self.menu_file.addAction(self.act_close_list)
+
         self.menu_file.addSeparator()
 
-        self.act_quit = QAction("🚪 " + t("T107"), self)  # Kapat
+        self.act_quit = QAction("🚪 Çıkış", self)
         self.act_quit.setShortcut(QKeySequence.Quit)
         self.act_quit.triggered.connect(self.close)
         self.menu_file.addAction(self.act_quit)
@@ -195,6 +200,7 @@ class MainWindow(QMainWindow):
 
         self.toolbar.addAction(self.act_open)
         self.toolbar.addAction(self.act_save)
+        self.toolbar.addAction(self.act_close_list)
         self.toolbar.addSeparator()
         self.toolbar.addAction(self.act_move_up)
         self.toolbar.addAction(self.act_move_down)
@@ -407,6 +413,17 @@ class MainWindow(QMainWindow):
             QMessageBox.information(self, "SatSort", t("T144"))  # Kayıt tamamlandı
         except Exception as e:
             QMessageBox.critical(self, "Hata", f"Dosya kaydedilemedi: {e}")
+
+    def close_file(self) -> None:
+        """Closes the current channel list, clears the table and resets window to ready state."""
+        self._current_file_path = None
+        self._all_channels = []
+        self.channel_table.set_channels([])
+        self.sidebar.clear()
+        self.search_bar.clear()
+        self.setWindowTitle("SatSort - SatcoDX Channel Editor")
+        self.lbl_file_info.setText("Hazır")
+        self.status_bar.showMessage("Kanal listesi kapatıldı.", 3000)
 
     def toggle_sidebar(self, visible: bool) -> None:
         self.sidebar.setVisible(visible)

@@ -227,6 +227,12 @@ class TestComprehensiveSatSort(unittest.TestCase):
         self.assertIsNotNone(sel_ch)
         self.assertEqual(sel_ch.channel_name, "TRT 1 HD")
 
+    def test_close_file_clears_state(self):
+        self.win.close_file()
+        self.assertEqual(self.win.channel_table.rowCount(), 0)
+        self.assertEqual(self.win.lbl_file_info.text(), "Hazır")
+        self.assertIsNone(self.win._current_file_path)
+
     def test_channel_move_up_down(self):
         table = self.win.channel_table
         table.selectRow(2)  # Select ATV HD
