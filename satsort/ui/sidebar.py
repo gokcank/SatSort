@@ -147,7 +147,8 @@ class TransponderChannelsWidget(QGroupBox):
                 background-color: #1e293b;
             }
         """)
-        self.list_widget.itemDoubleClicked.connect(self._on_item_double_clicked)
+        self.list_widget.itemClicked.connect(self._on_item_clicked)
+        self.list_widget.itemDoubleClicked.connect(self._on_item_clicked)
         layout.addWidget(self.list_widget)
 
     def update_transponder_channels(
@@ -168,7 +169,7 @@ class TransponderChannelsWidget(QGroupBox):
                     item.setFont(QFont("", -1, QFont.Bold))
                 self.list_widget.addItem(item)
 
-    def _on_item_double_clicked(self, item: QListWidgetItem) -> None:
+    def _on_item_clicked(self, item: QListWidgetItem) -> None:
         ch = item.data(Qt.UserRole)
         if ch:
             self.channel_selected.emit(ch)

@@ -73,8 +73,10 @@ class ChannelTableWidget(QTableWidget):
         self.setSelectionMode(QAbstractItemView.ExtendedSelection)
         self.setDragEnabled(True)
         self.setAcceptDrops(True)
+        self.viewport().setAcceptDrops(True)
         self.setDropIndicatorShown(True)
-        self.setDragDropMode(QAbstractItemView.InternalMove)
+        self.setDragDropMode(QAbstractItemView.DragDrop)
+        self.setDragDropOverwriteMode(False)
         self.setDefaultDropAction(Qt.MoveAction)
         self.setAlternatingRowColors(False)
         self.setShowGrid(True)
@@ -339,24 +341,50 @@ class ChannelTableWidget(QTableWidget):
             self.channel_selected.emit(self._channels[row])
             self.channels_updated.emit()
 
+    def dragEnterEvent(self, event) -> None:
+        if event.source() == self:
+            event.acceptProposedAction()
+        else:
+            event.ignore()
+
+    def dragMoveEvent(self, event) -> None:
+        if event.source() == self:
+            event.acceptProposedAction()
+        else:
+            event.ignore()
+
     def dropEvent(self, event) -> None:
-        """Handles internal drag-drop row reordering."""
+        """Handles custom drag-drop row reordering cleanly without leaving empty rows."""
+        if event.source() != self:
+            event.ignore()
+            return
+
         selected_rows = self.get_selected_row_indices()
         if not selected_rows:
             event.ignore()
             return
 
+        source_row = selected_rows[0]
         drop_pos = event.position().toPoint()
         drop_row = self.rowAt(drop_pos.y())
-        if drop_row == -1:
-            drop_row = self.rowCount() - 1
 
-        source_row = selected_rows[0]
-        if source_row != drop_row:
-            self.move_channel(source_row, drop_row)
-            event.accept()
+        if drop_row == -1:
+            drop_row = max(0, len(self._channels) - 1)
+
+        # Precision calculation: if dropped on lower half of row, place after it
+        row_rect = self.visualRect(self.model().index(drop_row, 0))
+        if drop_pos.y() > row_rect.center().y() and drop_row < len(self._channels) - 1:
+            target_row = drop_row + 1
         else:
-            event.ignore()
+            target_row = drop_row
+
+        if source_row < target_row:
+            target_row -= 1
+
+        if source_row != target_row:
+            self.move_channel(source_row, target_row)
+
+        event.accept()
 
     def contextMenuEvent(self, event) -> None:
         """Renders the contextual right-click menu."""
