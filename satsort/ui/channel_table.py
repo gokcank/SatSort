@@ -205,6 +205,8 @@ class ChannelTableWidget(QTableWidget):
                 item.setBackground(bg_color)
 
     def _on_selection_changed(self) -> None:
+        if self._is_updating:
+            return
         selected_rows = self.get_selected_row_indices()
         if selected_rows and 0 <= selected_rows[0] < len(self._channels):
             self.channel_selected.emit(self._channels[selected_rows[0]])
@@ -432,6 +434,10 @@ class ChannelTableWidget(QTableWidget):
 
     def contextMenuEvent(self, event) -> None:
         """Renders the contextual right-click menu."""
+        clicked_row = self.rowAt(event.pos().y())
+        if clicked_row != -1 and clicked_row not in self.get_selected_row_indices():
+            self.selectRow(clicked_row)
+
         menu = QMenu(self)
         selected_ch = self.get_selected_channel()
         has_selection = selected_ch is not None
