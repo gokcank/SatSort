@@ -1,0 +1,117 @@
+"""
+SatSort - Internationalization (i18n) Manager
+"""
+
+from __future__ import annotations
+import json
+import os
+from pathlib import Path
+from typing import Callable, Dict, List, Optional
+
+
+class I18nManager:
+    """Manages multi-language translations and user locale preferences."""
+
+    def __init__(self, default_language: str = "Türkçe") -> None:
+        self._current_language: str = default_language
+        self._translations: Dict[str, Dict[str, str]] = {}
+        self._callbacks: List[Callable[[str], None]] = []
+        self._config_dir = Path.home() / ".config" / "satsort"
+        self._config_file = self._config_dir / "config.json"
+        
+        self._load_translations()
+        self._load_user_preference()
+
+    def _load_translations(self) -> None:
+        """Loads translations from the bundled translations.json file."""
+        json_path = Path(__file__).parent / "translations.json"
+        try:
+            with open(json_path, "r", encoding="utf-8") as f:
+                self._translations = json.load(f)
+        except Exception:
+            self._translations = {}
+
+    def _load_user_preference(self) -> None:
+        """Loads user language preference from ~/.config/satsort/config.json if available."""
+        if self._config_file.exists():
+            try:
+                with open(self._config_file, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                    saved_lang = data.get("language")
+                    if saved_lang and saved_lang in self._translations:
+                        self._current_language = saved_lang
+            except Exception:
+                pass
+
+    def _save_user_preference(self) -> None:
+        """Persists user language preference to ~/.config/satsort/config.json."""
+        try:
+            self._config_dir.mkdir(parents=True, exist_ok=True)
+            config_data = {}
+            if self._config_file.exists():
+                try:
+                    with open(self._config_file, "r", encoding="utf-8") as f:
+                        config_data = json.load(f)
+                except Exception:
+                    config_data = {}
+            
+            config_data["language"] = self._current_language
+            with open(self._config_file, "w", encoding="utf-8") as f:
+                json.dump(config_data, f, indent=2, ensure_ascii=False)
+        except Exception:
+            pass
+
+    def get_supported_languages(self) -> List[str]:
+        """Returns the list of all available languages."""
+        return list(self._translations.keys())
+
+    @property
+    def current_language(self) -> str:
+        return self._current_language
+
+    def set_language(self, language: str) -> bool:
+        """Switches the active language and notifies all registered listener callbacks."""
+        if language in self._translations:
+            self._current_language = language
+            self._save_user_preference()
+            self._notify_listeners()
+            return True
+        return False
+
+    def register_language_changed_callback(self, callback: Callable[[str], None]) -> None:
+        """Registers a callback function to be called whenever language changes."""
+        if callback not in self._callbacks:
+            self._callbacks.append(callback)
+
+    def _notify_listeners(self) -> None:
+        for cb in self._callbacks:
+            try:
+                cb(self._current_language)
+            except Exception:
+                pass
+
+    def get_text(self, key: str, language: Optional[str] = None, default: Optional[str] = None) -> str:
+        """
+        Retrieves localized string for key in current or specified language.
+        Falls back to English or key itself if missing.
+        """
+        lang = language or self._current_language
+        lang_dict = self._translations.get(lang, {})
+        if key in lang_dict:
+            return lang_dict[key]
+        
+        # Fallback to English
+        en_dict = self._translations.get("English", {})
+        if key in en_dict:
+            return en_dict[key]
+            
+        return default if default is not None else key
+
+    def t(self, key: str, default: Optional[str] = None) -> str:
+        """Short alias for get_text."""
+        return self.get_text(key, default=default)
+
+
+# Global singleton instance
+i18n = I18nManager()
+t = i18n.t
