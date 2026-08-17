@@ -18,6 +18,7 @@ from PySide6.QtWidgets import (
 
 from ..core.models import Channel, ChannelType, Polarization
 from ..i18n import t
+from .theme import get_current_theme
 
 
 class ChannelTableWidget(QTableWidget):
@@ -190,8 +191,12 @@ class ChannelTableWidget(QTableWidget):
         self.channels_updated.emit()
 
     def _update_row_visual(self, row: int, is_checked: bool) -> None:
-        """Applies visual highlighting to checked rows."""
-        bg_color = QColor("#2e2608") if is_checked else QColor("#14171d")
+        """Applies visual highlighting to checked rows based on theme."""
+        if get_current_theme() == "light":
+            bg_color = QColor("#fef3c7") if is_checked else QColor("#ffffff")
+        else:
+            bg_color = QColor("#2e2608") if is_checked else QColor("#14171d")
+
         for col in range(self.columnCount()):
             item = self.item(row, col)
             if item:
