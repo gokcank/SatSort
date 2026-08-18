@@ -103,7 +103,12 @@ class ChannelTableWidget(QTableWidget):
     def set_channels(self, channels: List[Channel]) -> None:
         """Loads and displays a new list of channels."""
         self._is_updating = True
+        self.setUpdatesEnabled(False)
+        self.blockSignals(True)
         self._channels = list(channels)
+        
+        # Clear the table cleanly before repopulating to prevent stale items
+        self.setRowCount(0)
         self.setRowCount(len(self._channels))
 
         bold_font = QFont()
@@ -189,6 +194,8 @@ class ChannelTableWidget(QTableWidget):
             # Row background highlight for checked items
             self._update_row_visual(row, ch.is_checked)
 
+        self.blockSignals(False)
+        self.setUpdatesEnabled(True)
         self._is_updating = False
         self.channels_updated.emit()
 
@@ -259,13 +266,16 @@ class ChannelTableWidget(QTableWidget):
         self.channels_updated.emit()
 
     def swap_channels(self, idx1: int, idx2: int) -> bool:
-        """Swaps two channels in-place without rebuilding the table."""
+        """Swaps two channels in-place efficiently."""
         if not (0 <= idx1 < len(self._channels)) or not (0 <= idx2 < len(self._channels)):
             return False
         if idx1 == idx2:
             return True
 
         self._is_updating = True
+        self.setUpdatesEnabled(False)
+        self.blockSignals(True)
+
         self._channels[idx1], self._channels[idx2] = self._channels[idx2], self._channels[idx1]
 
         for col in range(self.columnCount()):
@@ -284,26 +294,56 @@ class ChannelTableWidget(QTableWidget):
         self._update_row_visual(idx1, self._channels[idx1].is_checked)
         self._update_row_visual(idx2, self._channels[idx2].is_checked)
 
+        self.blockSignals(False)
+        self.setUpdatesEnabled(True)
         self._is_updating = False
+
         self.selectRow(idx2)
         self.channels_updated.emit()
         return True
 
     def move_channel(self, source_row: int, target_row: int) -> bool:
-        """Moves a single channel from source index to target index in-place."""
+        """Moves a single channel from source index to target index efficiently in O(1) row ops."""
         if not (0 <= source_row < len(self._channels)) or not (0 <= target_row < len(self._channels)):
             return False
         if source_row == target_row:
             return True
 
-        if abs(source_row - target_row) == 1:
-            return self.swap_channels(source_row, target_row)
+        self._is_updating = True
+        self.setUpdatesEnabled(False)
+        self.blockSignals(True)
 
-        step = 1 if target_row > source_row else -1
-        for curr in range(source_row, target_row, step):
-            self.swap_channels(curr, curr + step)
+        # 1. Update data model
+        ch = self._channels.pop(source_row)
+        self._channels.insert(target_row, ch)
+
+        # 2. Extract items to prevent deletion
+        items = []
+        for col in range(self.columnCount()):
+            items.append(self.takeItem(source_row, col))
+
+        # 3. Update table structure cleanly
+        self.removeRow(source_row)
+        self.insertRow(target_row)
+
+        # 4. Insert items at new position
+        for col in range(self.columnCount()):
+            self.setItem(target_row, col, items[col])
+
+        # 5. Update row numbers for affected rows
+        start = min(source_row, target_row)
+        end = max(source_row, target_row)
+        for r in range(start, end + 1):
+            item_no = self.item(r, self.COL_NO)
+            if item_no:
+                item_no.setText(str(r + 1))
+
+        self.blockSignals(False)
+        self.setUpdatesEnabled(True)
+        self._is_updating = False
 
         self.selectRow(target_row)
+        self.channels_updated.emit()
         return True
 
     def move_selected_up(self) -> None:
@@ -460,6 +500,7 @@ class ChannelTableWidget(QTableWidget):
         if source_row != target_row:
             QTimer.singleShot(0, lambda s=source_row, t=target_row: self.move_channel(s, t))
 
+        event.setDropAction(Qt.IgnoreAction)
         event.accept()
 
     def contextMenuEvent(self, event) -> None:
