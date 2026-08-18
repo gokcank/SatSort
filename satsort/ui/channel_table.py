@@ -446,29 +446,32 @@ class ChannelTableWidget(QTableWidget):
         # Actions
         act_up = QAction(t("T109"), self)  # Yukarı Taşı
         act_up.setEnabled(has_selection)
-        act_up.triggered.connect(self.move_selected_up)
+        act_up.triggered.connect(lambda: QTimer.singleShot(0, self.move_selected_up))
         menu.addAction(act_up)
 
         act_down = QAction(t("T110"), self)  # Aşağı Taşı
         act_down.setEnabled(has_selection)
-        act_down.triggered.connect(self.move_selected_down)
+        act_down.triggered.connect(lambda: QTimer.singleShot(0, self.move_selected_down))
         menu.addAction(act_down)
 
         menu.addSeparator()
 
         act_move_sel = QAction(t("T113"), self)  # Seçili Kanalı Taşı
         act_move_sel.setEnabled(has_selection)
-        act_move_sel.triggered.connect(lambda: self.request_move.emit(False))
+        act_move_sel.triggered.connect(lambda: QTimer.singleShot(0, lambda: self.request_move.emit(False)))
         menu.addAction(act_move_sel)
 
         act_move_chk = QAction(t("T114"), self)  # İşaretli Kanalları Taşı
         act_move_chk.setEnabled(has_checked)
-        act_move_chk.triggered.connect(lambda: self.request_move.emit(True))
+        act_move_chk.triggered.connect(lambda: QTimer.singleShot(0, lambda: self.request_move.emit(True)))
         menu.addAction(act_move_chk)
+
+        sel_indices = self.get_selected_row_indices()
+        sel_row = sel_indices[0] if sel_indices else 0
 
         act_swap = QAction(t("T115"), self)  # Takas Et
         act_swap.setEnabled(has_selection)
-        act_swap.triggered.connect(lambda: self.request_swap.emit(self.get_selected_row_indices()[0]))
+        act_swap.triggered.connect(lambda r=sel_row: QTimer.singleShot(0, lambda: self.request_swap.emit(r)))
         menu.addAction(act_swap)
 
         menu.addSeparator()
@@ -476,7 +479,7 @@ class ChannelTableWidget(QTableWidget):
         act_rename = QAction(t("T116"), self)  # Kanal Adını Değiştir
         act_rename.setEnabled(has_selection)
         act_rename.triggered.connect(
-            lambda: self.request_rename.emit(self.get_selected_row_indices()[0], selected_ch)
+            lambda r=sel_row, c=selected_ch: QTimer.singleShot(0, lambda: self.request_rename.emit(r, c))
         )
         menu.addAction(act_rename)
 
@@ -484,18 +487,18 @@ class ChannelTableWidget(QTableWidget):
 
         act_del_sel = QAction(t("T111"), self)  # Seçiliyi Sil
         act_del_sel.setEnabled(has_selection)
-        act_del_sel.triggered.connect(self.delete_selected)
+        act_del_sel.triggered.connect(lambda: QTimer.singleShot(0, self.delete_selected))
         menu.addAction(act_del_sel)
 
         act_del_chk = QAction(t("T112"), self)  # İşaretlileri Sil
         act_del_chk.setEnabled(has_checked)
-        act_del_chk.triggered.connect(self.delete_checked)
+        act_del_chk.triggered.connect(lambda: QTimer.singleShot(0, self.delete_checked))
         menu.addAction(act_del_chk)
 
         menu.addSeparator()
 
         act_uncheck = QAction(t("T108"), self)  # Tüm İşaretleri Kaldır
-        act_uncheck.triggered.connect(self.uncheck_all)
+        act_uncheck.triggered.connect(lambda: QTimer.singleShot(0, self.uncheck_all))
         menu.addAction(act_uncheck)
 
         menu.exec(event.globalPos())
