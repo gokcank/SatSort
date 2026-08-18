@@ -194,6 +194,8 @@ class ChannelTableWidget(QTableWidget):
 
     def _update_row_visual(self, row: int, is_checked: bool) -> None:
         """Applies visual highlighting to checked rows based on theme."""
+        prev_updating = self._is_updating
+        self._is_updating = True
         if get_current_theme() == "light":
             bg_color = QColor("#fef3c7") if is_checked else QColor("#ffffff")
         else:
@@ -203,6 +205,7 @@ class ChannelTableWidget(QTableWidget):
             item = self.item(row, col)
             if item:
                 item.setBackground(bg_color)
+        self._is_updating = prev_updating
 
     def _on_selection_changed(self) -> None:
         if self._is_updating:
@@ -255,16 +258,51 @@ class ChannelTableWidget(QTableWidget):
         self._is_updating = False
         self.channels_updated.emit()
 
+    def swap_channels(self, idx1: int, idx2: int) -> bool:
+        """Swaps two channels in-place without rebuilding the table."""
+        if not (0 <= idx1 < len(self._channels)) or not (0 <= idx2 < len(self._channels)):
+            return False
+        if idx1 == idx2:
+            return True
+
+        self._is_updating = True
+        self._channels[idx1], self._channels[idx2] = self._channels[idx2], self._channels[idx1]
+
+        for col in range(self.columnCount()):
+            item1 = self.takeItem(idx1, col)
+            item2 = self.takeItem(idx2, col)
+            self.setItem(idx1, col, item2)
+            self.setItem(idx2, col, item1)
+
+        item_no1 = self.item(idx1, self.COL_NO)
+        if item_no1:
+            item_no1.setText(str(idx1 + 1))
+        item_no2 = self.item(idx2, self.COL_NO)
+        if item_no2:
+            item_no2.setText(str(idx2 + 1))
+
+        self._update_row_visual(idx1, self._channels[idx1].is_checked)
+        self._update_row_visual(idx2, self._channels[idx2].is_checked)
+
+        self._is_updating = False
+        self.selectRow(idx2)
+        self.channels_updated.emit()
+        return True
+
     def move_channel(self, source_row: int, target_row: int) -> bool:
-        """Moves a single channel from source index to target index."""
+        """Moves a single channel from source index to target index in-place."""
         if not (0 <= source_row < len(self._channels)) or not (0 <= target_row < len(self._channels)):
             return False
         if source_row == target_row:
             return True
 
-        channel = self._channels.pop(source_row)
-        self._channels.insert(target_row, channel)
-        self.set_channels(self._channels)
+        if abs(source_row - target_row) == 1:
+            return self.swap_channels(source_row, target_row)
+
+        step = 1 if target_row > source_row else -1
+        for curr in range(source_row, target_row, step):
+            self.swap_channels(curr, curr + step)
+
         self.selectRow(target_row)
         return True
 
@@ -279,14 +317,6 @@ class ChannelTableWidget(QTableWidget):
         if not rows or rows[0] >= len(self._channels) - 1:
             return
         self.move_channel(rows[0], rows[0] + 1)
-
-    def swap_channels(self, idx1: int, idx2: int) -> bool:
-        if not (0 <= idx1 < len(self._channels)) or not (0 <= idx2 < len(self._channels)):
-            return False
-        self._channels[idx1], self._channels[idx2] = self._channels[idx2], self._channels[idx1]
-        self.set_channels(self._channels)
-        self.selectRow(idx2)
-        return True
 
     def move_checked_channels(self, target_idx: int) -> bool:
         """Moves all checked channels to a target index position."""
