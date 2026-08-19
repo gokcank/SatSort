@@ -69,11 +69,14 @@ class SearchBarWidget(QWidget):
         self._btn_prev.setStyleSheet("""
             QPushButton {
                 background-color: #1e293b;
-                color: #94a3b8;
+                color: #e2e8f0;
                 border: 1px solid #334155;
                 border-radius: 4px;
-                font-size: 11px;
+                padding: 0px;
+                margin: 0px;
+                font-size: 12px;
                 font-weight: bold;
+                text-align: center;
             }
             QPushButton:hover:enabled {
                 background-color: #334155;
@@ -96,11 +99,14 @@ class SearchBarWidget(QWidget):
         self._btn_next.setStyleSheet("""
             QPushButton {
                 background-color: #1e293b;
-                color: #94a3b8;
+                color: #e2e8f0;
                 border: 1px solid #334155;
                 border-radius: 4px;
-                font-size: 11px;
+                padding: 0px;
+                margin: 0px;
+                font-size: 12px;
                 font-weight: bold;
+                text-align: center;
             }
             QPushButton:hover:enabled {
                 background-color: #334155;
@@ -116,18 +122,21 @@ class SearchBarWidget(QWidget):
         layout.addWidget(self._btn_next)
 
         # Batch Mark Matches Button
-        self._btn_mark_all = QPushButton("☑️")
+        self._btn_mark_all = QPushButton("✔")
         self._btn_mark_all.setToolTip("Eşleşenleri İşaretle (Ctrl+Enter)")
         self._btn_mark_all.setEnabled(False)
         self._btn_mark_all.setFixedSize(28, 28)
         self._btn_mark_all.setStyleSheet("""
             QPushButton {
                 background-color: #1e293b;
-                color: #94a3b8;
+                color: #e2e8f0;
                 border: 1px solid #334155;
                 border-radius: 4px;
-                font-size: 11px;
+                padding: 0px;
+                margin: 0px;
+                font-size: 13px;
                 font-weight: bold;
+                text-align: center;
             }
             QPushButton:hover:enabled {
                 background-color: #164e63;
