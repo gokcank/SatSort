@@ -352,7 +352,32 @@ class MainWindow(QMainWindow):
             return
 
         dlg = CompareDialog(current, self)
+        dlg.apply_removals.connect(self._on_apply_removals)
+        dlg.apply_additions.connect(self._on_apply_additions)
         dlg.exec()
+
+    def _on_apply_removals(self, channels_to_remove: List[Channel]) -> None:
+        current = self.channel_table.get_channels()
+        keys_to_remove = {
+            (ch.channel_name.lower(), ch.frequency, ch.polarization.value, ch.symbol_rate)
+            for ch in channels_to_remove
+        }
+        remaining = [
+            ch for ch in current
+            if (ch.channel_name.lower(), ch.frequency, ch.polarization.value, ch.symbol_rate) not in keys_to_remove
+        ]
+        self.channel_table.set_channels(remaining)
+        self._set_dirty(True)
+
+    def _on_apply_additions(self, channels_to_add: List[Channel]) -> None:
+        if not channels_to_add:
+            return
+        current = self.channel_table.get_channels()
+        for ch in reversed(channels_to_add):
+            ch.is_checked = True
+            current.insert(0, ch)
+        self.channel_table.set_channels(current)
+        self._set_dirty(True)
 
     def _set_dirty(self, dirty: bool = True) -> None:
         self._is_dirty = dirty

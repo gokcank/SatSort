@@ -512,18 +512,41 @@ class TestComprehensiveSatSort(unittest.TestCase):
         self.assertEqual(dlg.get_channel_name(), "TRT 1 4K")
 
     def test_compare_files_logic_in_dialog(self):
+        # Current list: TRT 1 HD (idx 0), TRT HABER HD (idx 1), ATV HD (idx 2)
         current = [self.ch_trt1, self.ch_trthaber, self.ch_atv]
         dlg = CompareFilesDialog(current)
 
-        # New file has ATV HD, KRAL FM, DATA TEST (TRT 1 & TRT HABER removed, KRAL FM & DATA TEST added)
-        comparison = [self.ch_atv, self.ch_kral, self.ch_data]
+        # Create a modified version of TRT 1 with a new name
+        import copy
+        ch_trt1_renamed = copy.deepcopy(self.ch_trt1)
+        ch_trt1_renamed.channel_name = "TRT 1 4K"
+
+        # Comparison list:
+        # 1. ATV HD (idx 0 -> order changed from 2 to 0)
+        # 2. TRT 1 4K (idx 1 -> renamed from TRT 1 HD)
+        # 3. KRAL FM (idx 2 -> newly added)
+        # (TRT HABER HD is removed)
+        comparison = [self.ch_atv, ch_trt1_renamed, self.ch_kral]
         dlg._compute_differences(comparison)
 
-        self.assertEqual(len(dlg._removed_channels), 2)
-        self.assertEqual([c.channel_name for c in dlg._removed_channels], ["TRT 1 HD", "TRT HABER HD"])
+        # Tab 1: Order Changed
+        self.assertEqual(len(dlg._order_changed), 1)
+        self.assertEqual(dlg._order_changed[0]["channel"].channel_name, "ATV HD")
+        self.assertEqual(dlg._order_changed[0]["old_idx"], 3)  # row 3 (idx 2)
+        self.assertEqual(dlg._order_changed[0]["new_idx"], 1)  # row 1 (idx 0)
 
-        self.assertEqual(len(dlg._inserted_channels), 2)
-        self.assertEqual([c.channel_name for c in dlg._inserted_channels], ["KRAL FM", "DATA TEST"])
+        # Tab 2: Renamed
+        self.assertEqual(len(dlg._name_changed), 1)
+        self.assertEqual(dlg._name_changed[0]["old_name"], "TRT 1 HD")
+        self.assertEqual(dlg._name_changed[0]["new_name"], "TRT 1 4K")
+
+        # Tab 3: Removed
+        self.assertEqual(len(dlg._removed_channels), 2)  # TRT 1 HD (name changed so old name removed) & TRT HABER HD
+        self.assertIn("TRT HABER HD", [c.channel_name for c in dlg._removed_channels])
+
+        # Tab 4: Inserted
+        self.assertEqual(len(dlg._inserted_channels), 2)  # TRT 1 4K & KRAL FM
+        self.assertIn("KRAL FM", [c.channel_name for c in dlg._inserted_channels])
 
     def test_language_selection_dialog(self):
         dlg = LanguageSelectionDialog()
