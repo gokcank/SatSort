@@ -6,7 +6,7 @@ from __future__ import annotations
 from typing import List, Optional
 
 from PySide6.QtCore import Qt, Signal, QPoint, QTimer
-from PySide6.QtGui import QColor, QFont, QAction, QIcon
+from PySide6.QtGui import QColor, QFont, QAction, QIcon, QPainter, QPen
 from PySide6.QtWidgets import (
     QTableWidget,
     QTableWidgetItem,
@@ -48,6 +48,8 @@ class ChannelTableWidget(QTableWidget):
         super().__init__(parent)
         self._channels: List[Channel] = []
         self._is_updating = False
+        self._drag_active: bool = False
+        self._drop_target_row: Optional[int] = None
 
         self._setup_ui()
         self._connect_signals()
@@ -74,7 +76,9 @@ class ChannelTableWidget(QTableWidget):
         self.setDragEnabled(True)
         self.setAcceptDrops(True)
         self.viewport().setAcceptDrops(True)
-        self.setDropIndicatorShown(True)
+        self.setAutoScroll(True)
+        self.setAutoScrollMargin(40)
+        self.setDropIndicatorShown(False)
         self.setDragDropMode(QAbstractItemView.DragDrop)
         self.setDragDropOverwriteMode(False)
         self.setDefaultDropAction(Qt.MoveAction)
@@ -379,6 +383,44 @@ class ChannelTableWidget(QTableWidget):
         self.set_channels(self._channels)
         return True
 
+    def move_multiple_channels(self, source_rows: List[int], target_row: int) -> bool:
+        """Moves a block of multiple channels to a target row position."""
+        if not source_rows or not (0 <= target_row <= len(self._channels)):
+            return False
+
+        unique_sources = sorted(list(set(source_rows)))
+        if not unique_sources:
+            return False
+
+        channels_to_move = [self._channels[r] for r in unique_sources]
+
+        # Calculate insertion index in remaining channels list
+        offset = sum(1 for r in unique_sources if r < target_row)
+        insert_pos = max(0, min(target_row - offset, len(self._channels) - len(channels_to_move)))
+
+        # Remove source channels from highest index to lowest
+        for r in reversed(unique_sources):
+            del self._channels[r]
+
+        # Insert at new position
+        for i, ch in enumerate(channels_to_move):
+            self._channels.insert(insert_pos + i, ch)
+
+        # Repopulate table
+        self.set_channels(self._channels)
+
+        # Re-select the moved block of rows
+        self.clearSelection()
+        for r in range(insert_pos, insert_pos + len(channels_to_move)):
+            self.selectRow(r)
+
+        first_item = self.item(insert_pos, 0)
+        if first_item:
+            self.scrollToItem(first_item)
+
+        self.channels_updated.emit()
+        return True
+
     def delete_selected(self) -> None:
         rows = self.get_selected_row_indices()
         if not rows:
@@ -461,49 +503,103 @@ class ChannelTableWidget(QTableWidget):
 
     def dragEnterEvent(self, event) -> None:
         if event.source() == self:
+            self._drag_active = True
+            self._drop_target_row = None
             event.acceptProposedAction()
         else:
             event.ignore()
 
     def dragMoveEvent(self, event) -> None:
         if event.source() == self:
+            pos = event.position().toPoint()
+            y = pos.y()
+            vh = self.viewport().height()
+            margin = 40
+
+            # Smooth edge auto-scrolling
+            if y < margin:
+                self.verticalScrollBar().setValue(self.verticalScrollBar().value() - 4)
+            elif y > vh - margin:
+                self.verticalScrollBar().setValue(self.verticalScrollBar().value() + 4)
+
+            drop_row = self.rowAt(y)
+            if drop_row == -1:
+                drop_row = max(0, len(self._channels))
+            else:
+                row_rect = self.visualRect(self.model().index(drop_row, 0))
+                if y > row_rect.center().y():
+                    drop_row = min(len(self._channels), drop_row + 1)
+
+            self._drop_target_row = drop_row
+            self.viewport().update()
             event.acceptProposedAction()
         else:
             event.ignore()
 
+    def dragLeaveEvent(self, event) -> None:
+        self._drag_active = False
+        self._drop_target_row = None
+        self.viewport().update()
+        event.accept()
+
     def dropEvent(self, event) -> None:
-        """Handles custom drag-drop row reordering cleanly without leaving empty rows."""
+        """Handles multi-channel drag-drop row reordering cleanly without leaving empty rows."""
         if event.source() != self:
             event.ignore()
             return
+
+        self._drag_active = False
+        target_row = self._drop_target_row
+        self._drop_target_row = None
+        self.viewport().update()
 
         selected_rows = self.get_selected_row_indices()
         if not selected_rows:
             event.ignore()
             return
 
-        source_row = selected_rows[0]
-        drop_pos = event.position().toPoint()
-        drop_row = self.rowAt(drop_pos.y())
+        if target_row is None:
+            drop_pos = event.position().toPoint()
+            drop_row = self.rowAt(drop_pos.y())
+            if drop_row == -1:
+                target_row = len(self._channels)
+            else:
+                row_rect = self.visualRect(self.model().index(drop_row, 0))
+                target_row = drop_row + 1 if drop_pos.y() > row_rect.center().y() else drop_row
 
-        if drop_row == -1:
-            drop_row = max(0, len(self._channels) - 1)
-
-        # Precision calculation: if dropped on lower half of row, place after it
-        row_rect = self.visualRect(self.model().index(drop_row, 0))
-        if drop_pos.y() > row_rect.center().y() and drop_row < len(self._channels) - 1:
-            target_row = drop_row + 1
-        else:
-            target_row = drop_row
-
-        if source_row < target_row:
-            target_row -= 1
-
-        if source_row != target_row:
-            QTimer.singleShot(0, lambda s=source_row, t=target_row: self.move_channel(s, t))
-
+        QTimer.singleShot(0, lambda s=selected_rows, t=target_row: self.move_multiple_channels(s, t))
         event.setDropAction(Qt.IgnoreAction)
         event.accept()
+
+    def paintEvent(self, event) -> None:
+        super().paintEvent(event)
+        if self._drag_active and self._drop_target_row is not None and self.rowCount() > 0:
+            painter = QPainter(self.viewport())
+            painter.setRenderHint(QPainter.Antialiasing)
+
+            if self._drop_target_row >= self.rowCount():
+                rect = self.visualRect(self.model().index(self.rowCount() - 1, 0))
+                line_y = rect.bottom()
+            else:
+                rect = self.visualRect(self.model().index(self._drop_target_row, 0))
+                line_y = rect.top()
+
+            width = self.viewport().width()
+            # Outer glow line
+            pen_glow = QPen(QColor(56, 189, 248, 120), 5)
+            painter.setPen(pen_glow)
+            painter.drawLine(0, line_y, width, line_y)
+
+            # Core crisp line
+            pen_line = QPen(QColor(56, 189, 248, 255), 2)
+            painter.setPen(pen_line)
+            painter.drawLine(0, line_y, width, line_y)
+
+            # Indicator circular markers on edges
+            painter.setBrush(QColor(56, 189, 248))
+            painter.drawEllipse(QPoint(6, line_y), 4, 4)
+            painter.drawEllipse(QPoint(width - 6, line_y), 4, 4)
+            painter.end()
 
     def contextMenuEvent(self, event) -> None:
         """Renders the contextual right-click menu."""
