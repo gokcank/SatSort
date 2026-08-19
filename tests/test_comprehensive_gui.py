@@ -254,17 +254,19 @@ class TestComprehensiveSatSort(unittest.TestCase):
 
     def test_channel_move_up_down(self):
         table = self.win.channel_table
+        search_bar = self.win.search_bar
+
         table.selectRow(2)  # Select ATV HD
         self.assertEqual(table.get_selected_channel().channel_name, "ATV HD")
 
-        # Move Up -> Should become index 1
-        table.move_selected_up()
+        # Move Up using search bar button -> Should become index 1
+        self.win._on_search_prev()
         channels = table.get_channels()
         self.assertEqual(channels[1].channel_name, "ATV HD")
         self.assertEqual(channels[2].channel_name, "TRT HABER HD")
 
-        # Move Down -> Should return to index 2
-        table.move_selected_down()
+        # Move Down using search bar button -> Should return to index 2
+        self.win._on_search_next()
         channels = table.get_channels()
         self.assertEqual(channels[2].channel_name, "ATV HD")
 

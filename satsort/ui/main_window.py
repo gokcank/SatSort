@@ -212,7 +212,7 @@ class MainWindow(QMainWindow):
         self.act_about.triggered.connect(self.show_about)
         self.menu_help.addAction(self.act_about)
 
-        # Top Toolbar (Grouped UX Layout)
+        # Top Toolbar (Cleaned UX Layout)
         self.toolbar = QToolBar("Main Toolbar")
         self.toolbar.setIconSize(QSize(20, 20))
         self.toolbar.setMovable(False)
@@ -224,22 +224,17 @@ class MainWindow(QMainWindow):
         self.toolbar.addAction(self.act_close_list)
         self.toolbar.addSeparator()
 
-        # Group 2: Movement
-        self.toolbar.addAction(self.act_move_up)
-        self.toolbar.addAction(self.act_move_down)
-        self.toolbar.addSeparator()
-
-        # Group 3: Delete & Selection
+        # Group 2: Delete & Selection
         self.toolbar.addAction(self.act_del_sel)
         self.toolbar.addAction(self.act_toggle_check)
         self.toolbar.addSeparator()
 
-        # Group 4: Advanced Tools
+        # Group 3: Advanced Tools
         self.toolbar.addAction(self.act_compare)
         self.toolbar.addAction(self.act_import)
         self.toolbar.addSeparator()
 
-        # Group 5: View Controls
+        # Group 4: View Controls
         self.toolbar.addAction(self.act_toggle_sidebar)
 
     def _rebuild_language_menu(self) -> None:
@@ -408,6 +403,9 @@ class MainWindow(QMainWindow):
                 self.act_toggle_check.setText("☑️ Tümünü İşaretle")
                 self.act_toggle_check.setToolTip("Tüm kanalları işaretle (Ctrl+A)")
 
+        if hasattr(self, "search_bar"):
+            self.search_bar.set_has_channels(len(channels) > 0)
+
         if not self._is_loading and (self._current_file_path is not None or len(channels) > 0):
             self._set_dirty(True)
 
@@ -420,33 +418,42 @@ class MainWindow(QMainWindow):
         )
 
     def _on_search_prev(self) -> None:
-        idx = self.channel_table.goto_prev_match()
-        self.search_bar.set_match_status(
-            idx,
-            len(self.channel_table.get_search_matches()),
-            len(self.channel_table.get_channels()),
-        )
+        if self.search_bar.get_text():
+            idx = self.channel_table.goto_prev_match()
+            self.search_bar.set_match_status(
+                idx,
+                len(self.channel_table.get_search_matches()),
+                len(self.channel_table.get_channels()),
+            )
+        else:
+            self.channel_table.move_selected_up()
 
     def _on_search_next(self) -> None:
-        idx = self.channel_table.goto_next_match()
-        self.search_bar.set_match_status(
-            idx,
-            len(self.channel_table.get_search_matches()),
-            len(self.channel_table.get_channels()),
-        )
+        if self.search_bar.get_text():
+            idx = self.channel_table.goto_next_match()
+            self.search_bar.set_match_status(
+                idx,
+                len(self.channel_table.get_search_matches()),
+                len(self.channel_table.get_channels()),
+            )
+        else:
+            self.channel_table.move_selected_down()
 
     def _on_search_confirmed(self, text: str) -> None:
-        match_count = self.channel_table.mark_matching_channels(text)
-        self.search_bar.set_match_status(
-            self.channel_table.get_current_match_index(),
-            match_count,
-            len(self.channel_table.get_channels()),
-        )
+        if text:
+            match_count = self.channel_table.mark_matching_channels(text)
+            self.search_bar.set_match_status(
+                self.channel_table.get_current_match_index(),
+                match_count,
+                len(self.channel_table.get_channels()),
+            )
 
-        if match_count == 0:
-            self.status_bar.showMessage(t("T142"), 4000)  # Kanal bulunamadı
+            if match_count == 0:
+                self.status_bar.showMessage(t("T142"), 4000)  # Kanal bulunamadı
+            else:
+                self.status_bar.showMessage(f"{match_count} {t('T143')}", 4000)  # X Kanal bulundu ve işaretlendi
         else:
-            self.status_bar.showMessage(f"{match_count} {t('T143')}", 4000)  # X Kanal bulundu ve işaretlendi
+            self.channel_table.toggle_all_checked()
 
     def _on_search_cleared(self) -> None:
         self.channel_table.clear_search_matches()

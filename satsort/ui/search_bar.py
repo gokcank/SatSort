@@ -123,7 +123,7 @@ class SearchBarWidget(QWidget):
 
         # Batch Mark Matches Button
         self._btn_mark_all = QPushButton("✔")
-        self._btn_mark_all.setToolTip("Eşleşenleri İşaretle (Ctrl+Enter)")
+        self._btn_mark_all.setToolTip(f"{t('T143')} (Ctrl+Enter)")
         self._btn_mark_all.setEnabled(False)
         self._btn_mark_all.setFixedSize(28, 28)
         self._btn_mark_all.setStyleSheet("""
@@ -167,6 +167,8 @@ class SearchBarWidget(QWidget):
         self._count_label.setVisible(False)
         layout.addWidget(self._count_label)
 
+        self._has_channels = False
+
         # Connect signals
         self._search_input.textChanged.connect(self._on_text_changed)
         self._search_input.returnPressed.connect(self._on_return_pressed)
@@ -174,13 +176,29 @@ class SearchBarWidget(QWidget):
         self._btn_next.clicked.connect(lambda checked=False: self.next_match_requested.emit())
         self._btn_mark_all.clicked.connect(lambda checked=False: self.search_confirmed.emit(self.get_text()))
 
+    def set_has_channels(self, has_channels: bool) -> None:
+        """Enables buttons for move operations when table has channels and no search is active."""
+        self._has_channels = has_channels
+        query = self.get_text()
+        if not query:
+            self._btn_prev.setEnabled(has_channels)
+            self._btn_next.setEnabled(has_channels)
+            self._btn_mark_all.setEnabled(has_channels)
+            self._update_idle_tooltips()
+
+    def _update_idle_tooltips(self) -> None:
+        self._btn_prev.setToolTip(f"{t('T109')} (Alt+Up)")
+        self._btn_next.setToolTip(f"{t('T110')} (Alt+Down)")
+        self._btn_mark_all.setToolTip(f"{t('T108')} (Ctrl+A)")
+
     def _on_text_changed(self, text: str) -> None:
         clean = text.strip()
         if not clean:
             self._count_label.setVisible(False)
-            self._btn_prev.setEnabled(False)
-            self._btn_next.setEnabled(False)
-            self._btn_mark_all.setEnabled(False)
+            self._btn_prev.setEnabled(self._has_channels)
+            self._btn_next.setEnabled(self._has_channels)
+            self._btn_mark_all.setEnabled(self._has_channels)
+            self._update_idle_tooltips()
             self.clear_requested.emit()
         else:
             self.text_changed.emit(clean)
@@ -195,15 +213,19 @@ class SearchBarWidget(QWidget):
         query = self.get_text()
         if not query:
             self._count_label.setVisible(False)
-            self._btn_prev.setEnabled(False)
-            self._btn_next.setEnabled(False)
-            self._btn_mark_all.setEnabled(False)
+            self._btn_prev.setEnabled(self._has_channels)
+            self._btn_next.setEnabled(self._has_channels)
+            self._btn_mark_all.setEnabled(self._has_channels)
+            self._update_idle_tooltips()
             return
 
         has_matches = match_count > 0
         self._btn_prev.setEnabled(has_matches)
         self._btn_next.setEnabled(has_matches)
         self._btn_mark_all.setEnabled(has_matches)
+        self._btn_prev.setToolTip(f"{t('T109')} (Shift+Enter)")
+        self._btn_next.setToolTip(f"{t('T110')} (Enter)")
+        self._btn_mark_all.setToolTip(f"{t('T143')} (Ctrl+Enter)")
 
         if has_matches:
             if current_index >= 0:
@@ -246,15 +268,19 @@ class SearchBarWidget(QWidget):
     def clear(self) -> None:
         self._search_input.clear()
         self._count_label.setVisible(False)
-        self._btn_prev.setEnabled(False)
-        self._btn_next.setEnabled(False)
-        self._btn_mark_all.setEnabled(False)
+        self._btn_prev.setEnabled(self._has_channels)
+        self._btn_next.setEnabled(self._has_channels)
+        self._btn_mark_all.setEnabled(self._has_channels)
+        self._update_idle_tooltips()
 
     def retranslate_ui(self) -> None:
         """Dynamically retranslates placeholder, tooltips and labels."""
         self._search_input.setPlaceholderText(f"{t('T118')}... (Enter: Next / Mark)")
-        self._btn_prev.setToolTip(f"{t('T109')} (Shift+Enter)")
-        self._btn_next.setToolTip(f"{t('T110')} (Enter)")
-        self._btn_mark_all.setToolTip(f"{t('T143')} (Ctrl+Enter)")
+        if self.get_text():
+            self._btn_prev.setToolTip(f"{t('T109')} (Shift+Enter)")
+            self._btn_next.setToolTip(f"{t('T110')} (Enter)")
+            self._btn_mark_all.setToolTip(f"{t('T143')} (Ctrl+Enter)")
+        else:
+            self._update_idle_tooltips()
 
 
