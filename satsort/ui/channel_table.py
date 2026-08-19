@@ -533,7 +533,9 @@ class ChannelTableWidget(QTableWidget):
             self.selectRow(first_row)
             first_item = self.item(first_row, 0)
             if first_item:
-                self.scrollToItem(first_item)
+                self.scrollToItem(first_item, QAbstractItemView.PositionAtCenter)
+            if 0 <= first_row < len(self._channels):
+                self.channel_selected.emit(self._channels[first_row])
         else:
             self._current_match_index = -1
 
@@ -550,7 +552,9 @@ class ChannelTableWidget(QTableWidget):
         self.selectRow(target_row)
         item = self.item(target_row, 0)
         if item:
-            self.scrollToItem(item)
+            self.scrollToItem(item, QAbstractItemView.PositionAtCenter)
+        if 0 <= target_row < len(self._channels):
+            self.channel_selected.emit(self._channels[target_row])
 
         self.viewport().update()
         return self._current_match_index
@@ -565,7 +569,9 @@ class ChannelTableWidget(QTableWidget):
         self.selectRow(target_row)
         item = self.item(target_row, 0)
         if item:
-            self.scrollToItem(item)
+            self.scrollToItem(item, QAbstractItemView.PositionAtCenter)
+        if 0 <= target_row < len(self._channels):
+            self.channel_selected.emit(self._channels[target_row])
 
         self.viewport().update()
         return self._current_match_index

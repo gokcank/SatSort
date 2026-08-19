@@ -170,9 +170,9 @@ class SearchBarWidget(QWidget):
         # Connect signals
         self._search_input.textChanged.connect(self._on_text_changed)
         self._search_input.returnPressed.connect(self._on_return_pressed)
-        self._btn_prev.clicked.connect(self.prev_match_requested.emit)
-        self._btn_next.clicked.connect(self.next_match_requested.emit)
-        self._btn_mark_all.clicked.connect(lambda: self.search_confirmed.emit(self.get_text()))
+        self._btn_prev.clicked.connect(lambda checked=False: self.prev_match_requested.emit())
+        self._btn_next.clicked.connect(lambda checked=False: self.next_match_requested.emit())
+        self._btn_mark_all.clicked.connect(lambda checked=False: self.search_confirmed.emit(self.get_text()))
 
     def _on_text_changed(self, text: str) -> None:
         clean = text.strip()
