@@ -45,6 +45,8 @@ class MainWindow(QMainWindow):
         super().__init__()
         self._current_file_path: Optional[str] = None
         self._all_channels: List[Channel] = []
+        self._is_dirty: bool = False
+        self._is_loading: bool = False
 
         self.setWindowTitle("SatSort - SatcoDX Channel Editor")
         self.resize(1100, 700)
@@ -287,44 +289,61 @@ class MainWindow(QMainWindow):
         if dlg.exec():
             new_name = dlg.get_channel_name()
             self.channel_table.update_channel_name_at(row, new_name)
+            self._set_dirty(True)
 
     def _on_request_move(self, is_checked: bool) -> None:
         channels = self.channel_table.get_channels()
         if not channels:
             return
+        total = len(channels)
 
-        title = t("T114") if is_checked else t("T113")
-        dlg = MovePositionDialog(title, len(channels), parent=self)
+        current_row = 0
+        if is_checked:
+            checked_indices = self.channel_table.get_checked_row_indices()
+            if checked_indices:
+                current_row = checked_indices[0]
+        else:
+            sel_indices = self.channel_table.get_selected_row_indices()
+            if sel_indices:
+                current_row = sel_indices[0]
+
+        dlg = MoveToDialog(current_row + 1, total, is_checked, self)
         if dlg.exec():
-            target_idx = dlg.get_target_index()
+            target_1based = dlg.get_target_row()
+            target_idx = target_1based - 1
+
             if is_checked:
                 self.channel_table.move_checked_channels(target_idx)
             else:
-                sel_rows = self.channel_table.get_selected_row_indices()
-                if sel_rows:
-                    self.channel_table.move_channel(sel_rows[0], target_idx)
+                self.channel_table.move_channel(current_row, target_idx)
+            self._set_dirty(True)
 
-    def _on_request_swap(self, source_row: int) -> None:
+    def _on_request_swap(self, target_row: int) -> None:
         channels = self.channel_table.get_channels()
-        if not channels:
+        if not channels or not (0 <= target_row < len(channels)):
             return
 
-        dlg = MovePositionDialog(t("T115"), len(channels), initial_pos=source_row + 1, parent=self)
+        current_channel = channels[target_row]
+        dlg = SwapDialog(target_row + 1, current_channel.channel_name, channels, self)
         if dlg.exec():
-            target_idx = dlg.get_target_index()
-            self.channel_table.swap_channels(source_row, target_idx)
+            source_idx, target_idx = dlg.get_swap_indices()
+            self.channel_table.swap_channels(source_idx, target_idx)
+            self._set_dirty(True)
 
     def _open_import_dialog(self) -> None:
         dlg = ImportChannelsDialog(self)
-        if dlg.exec():
-            imported = dlg.get_selected_channels()
-            if imported:
-                current = self.channel_table.get_channels()
-                for ch in reversed(imported):
-                    ch.is_checked = True
-                    current.insert(0, ch)
-                self.channel_table.set_channels(current)
-                QMessageBox.information(self, "SatSort", f"{len(imported)} {t('T143')}")
+        dlg.channels_imported.connect(self._on_channels_imported)
+        dlg.exec()
+
+    def _on_channels_imported(self, channels_to_add: List[Channel]) -> None:
+        if not channels_to_add:
+            return
+        current = self.channel_table.get_channels()
+        for ch in reversed(channels_to_add):
+            ch.is_checked = True
+            current.insert(0, ch)
+        self.channel_table.set_channels(current)
+        self._set_dirty(True)
 
     def _open_compare_dialog(self) -> None:
         current = self.channel_table.get_channels()
@@ -332,29 +351,20 @@ class MainWindow(QMainWindow):
             QMessageBox.warning(self, "SatSort", t("T145"))
             return
 
-        dlg = CompareFilesDialog(current, self)
-        dlg.apply_removals.connect(self._on_apply_removals)
-        dlg.apply_additions.connect(self._on_apply_additions)
+        dlg = CompareDialog(current, self)
         dlg.exec()
 
-    def _on_apply_removals(self, channels_to_remove: List[Channel]) -> None:
-        current = self.channel_table.get_channels()
-        keys_to_remove = {
-            (ch.channel_name.lower(), ch.frequency, ch.polarization.value, ch.symbol_rate)
-            for ch in channels_to_remove
-        }
-        remaining = [
-            ch for ch in current
-            if (ch.channel_name.lower(), ch.frequency, ch.polarization.value, ch.symbol_rate) not in keys_to_remove
-        ]
-        self.channel_table.set_channels(remaining)
+    def _set_dirty(self, dirty: bool = True) -> None:
+        self._is_dirty = dirty
+        self._update_window_title()
 
-    def _on_apply_additions(self, channels_to_add: List[Channel]) -> None:
-        current = self.channel_table.get_channels()
-        for ch in reversed(channels_to_add):
-            ch.is_checked = True
-            current.insert(0, ch)
-        self.channel_table.set_channels(current)
+    def _update_window_title(self) -> None:
+        dirty_mark = " *" if self._is_dirty else ""
+        if self._current_file_path:
+            base = os.path.basename(self._current_file_path)
+            self.setWindowTitle(f"SatSort - {base}{dirty_mark}")
+        else:
+            self.setWindowTitle(f"SatSort - SatcoDX Channel Editor{dirty_mark}")
 
     def _update_channel_counts(self) -> None:
         channels = self.channel_table.get_channels()
@@ -372,6 +382,9 @@ class MainWindow(QMainWindow):
             else:
                 self.act_toggle_check.setText("☑️ Tümünü İşaretle")
                 self.act_toggle_check.setToolTip("Tüm kanalları işaretle (Ctrl+A)")
+
+        if not self._is_loading and (self._current_file_path is not None or len(channels) > 0):
+            self._set_dirty(True)
 
     def _on_search_text_changed(self, text: str) -> None:
         matches = self.channel_table.search_channels(text)
@@ -414,7 +427,33 @@ class MainWindow(QMainWindow):
         self.channel_table.clear_search_matches()
         self.search_bar.set_match_status(-1, 0, len(self.channel_table.get_channels()))
 
-    def open_file(self) -> None:
+    def _maybe_save_changes(self) -> bool:
+        """
+        Prompts the user to save changes if unsaved modifications exist.
+        Returns True if safe to proceed (saved or discarded), False if cancelled.
+        """
+        if not self._is_dirty:
+            return True
+
+        reply = QMessageBox.question(
+            self,
+            "SatSort",
+            "Kaydedilmemiş değişiklikleriniz var. Değişiklikleri kaydetmek istiyor musunuz?",
+            QMessageBox.Save | QMessageBox.Discard | QMessageBox.Cancel,
+            QMessageBox.Save,
+        )
+
+        if reply == QMessageBox.Save:
+            return self.save_file()
+        elif reply == QMessageBox.Discard:
+            return True
+        else:  # QMessageBox.Cancel
+            return False
+
+    def open_file(self) -> bool:
+        if not self._maybe_save_changes():
+            return False
+
         file_path, _ = QFileDialog.getOpenFileName(
             self,
             t("T101"),
@@ -422,26 +461,31 @@ class MainWindow(QMainWindow):
             "SatcoDx Files (*.sdx);;All Files (*.*)",
         )
         if not file_path:
-            return
+            return False
 
         try:
+            self._is_loading = True
             channels = read_sdx_file(file_path)
             self._current_file_path = file_path
             self._all_channels = channels
             self.channel_table.set_channels(channels)
-            self.setWindowTitle(f"SatSort - {os.path.basename(file_path)}")
+            self._is_loading = False
+            self._set_dirty(False)
             self.lbl_file_info.setText(f"Açık Dosya: {file_path}")
             self.status_bar.showMessage(f"{len(channels)} {t('T118')} yüklendi.", 4000)
             if channels:
                 self.channel_table.selectRow(0)
+            return True
         except Exception as e:
+            self._is_loading = False
             QMessageBox.critical(self, "Hata", f"Dosya açılamadı: {e}")
+            return False
 
-    def save_file(self) -> None:
+    def save_file(self) -> bool:
         channels = self.channel_table.get_channels()
         if not channels:
             QMessageBox.warning(self, "SatSort", t("T145"))  # Liste boş uyarısı
-            return
+            return False
 
         file_path, _ = QFileDialog.getSaveFileName(
             self,
@@ -450,27 +494,39 @@ class MainWindow(QMainWindow):
             "SatcoDx Files (*.sdx);;All Files (*.*)",
         )
         if not file_path:
-            return
+            return False
 
         try:
             write_sdx_file(file_path, channels)
             self._current_file_path = file_path
-            self.setWindowTitle(f"SatSort - {os.path.basename(file_path)}")
+            self._set_dirty(False)
             self.lbl_file_info.setText(f"Kayıt Yeri: {file_path}")
             QMessageBox.information(self, "SatSort", t("T144"))  # Kayıt tamamlandı
+            return True
         except Exception as e:
             QMessageBox.critical(self, "Hata", f"Dosya kaydedilemedi: {e}")
+            return False
 
-    def close_file(self) -> None:
-        """Closes the current channel list, clears the table and resets window to ready state."""
+    def close_file(self) -> bool:
+        """Closes the current channel list, clears table and resets window to ready state."""
+        if not self._maybe_save_changes():
+            return False
+
         self._current_file_path = None
         self._all_channels = []
         self.channel_table.set_channels([])
         self.sidebar.clear()
         self.search_bar.clear()
-        self.setWindowTitle("SatSort - SatcoDX Channel Editor")
+        self._set_dirty(False)
         self.lbl_file_info.setText("Hazır")
         self.status_bar.showMessage("Kanal listesi kapatıldı.", 3000)
+        return True
+
+    def closeEvent(self, event) -> None:
+        if self._maybe_save_changes():
+            event.accept()
+        else:
+            event.ignore()
 
     def toggle_sidebar(self, visible: bool) -> None:
         self.sidebar.setVisible(visible)
@@ -494,5 +550,3 @@ class MainWindow(QMainWindow):
         self._rebuild_language_menu()
         self.channel_table.set_channels(self.channel_table.get_channels())
         self._update_channel_counts()
-
-

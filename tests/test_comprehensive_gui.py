@@ -164,6 +164,7 @@ class TestComprehensiveSatSort(unittest.TestCase):
         self.win.channel_table.set_channels(self.initial_channels)
 
     def tearDown(self):
+        self.win._set_dirty(False)
         self.win.close()
 
     # -------------------------------------------------------------
@@ -228,10 +229,28 @@ class TestComprehensiveSatSort(unittest.TestCase):
         self.assertEqual(sel_ch.channel_name, "TRT 1 HD")
 
     def test_close_file_clears_state(self):
+        self.win._set_dirty(False)
         self.win.close_file()
         self.assertEqual(self.win.channel_table.rowCount(), 0)
         self.assertEqual(self.win.lbl_file_info.text(), "Hazır")
         self.assertIsNone(self.win._current_file_path)
+        self.assertFalse(self.win._is_dirty)
+
+    def test_unsaved_changes_dirty_tracking_and_guard(self):
+        # Initial state on loaded file
+        self.win._set_dirty(False)
+        self.assertFalse(self.win._is_dirty)
+        self.assertNotIn("*", self.win.windowTitle())
+
+        # Modify channel name -> marks dirty
+        self.win.channel_table.update_channel_name_at(0, "NEW TRT")
+        self.assertTrue(self.win._is_dirty)
+        self.assertIn("*", self.win.windowTitle())
+
+        # Clean state when reset
+        self.win._set_dirty(False)
+        self.assertFalse(self.win._is_dirty)
+        self.assertNotIn("*", self.win.windowTitle())
 
     def test_channel_move_up_down(self):
         table = self.win.channel_table
