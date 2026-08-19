@@ -241,6 +241,8 @@ class MainWindow(QMainWindow):
         self.sidebar.transponder_channel_clicked.connect(self._on_transponder_channel_clicked)
         self.search_bar.text_changed.connect(self._on_search_text_changed)
         self.search_bar.search_confirmed.connect(self._on_search_confirmed)
+        self.search_bar.prev_match_requested.connect(self._on_search_prev)
+        self.search_bar.next_match_requested.connect(self._on_search_next)
         self.search_bar.clear_requested.connect(self._on_search_cleared)
 
     def _on_channel_selected(self, channel: Channel) -> None:
@@ -346,17 +348,36 @@ class MainWindow(QMainWindow):
                 self.act_toggle_check.setToolTip("Tüm kanalları işaretle (Ctrl+A)")
 
     def _on_search_text_changed(self, text: str) -> None:
-        channels = self.channel_table.get_channels()
-        lower_q = text.lower()
-        match_count = 0
-        for ch in channels:
-            if lower_q in ch.channel_name.lower():
-                match_count += 1
-        self.search_bar.set_match_count(match_count, len(channels))
+        matches = self.channel_table.search_channels(text)
+        self.search_bar.set_match_status(
+            self.channel_table.get_current_match_index(),
+            len(matches),
+            len(self.channel_table.get_channels()),
+        )
+
+    def _on_search_prev(self) -> None:
+        idx = self.channel_table.goto_prev_match()
+        self.search_bar.set_match_status(
+            idx,
+            len(self.channel_table.get_search_matches()),
+            len(self.channel_table.get_channels()),
+        )
+
+    def _on_search_next(self) -> None:
+        idx = self.channel_table.goto_next_match()
+        self.search_bar.set_match_status(
+            idx,
+            len(self.channel_table.get_search_matches()),
+            len(self.channel_table.get_channels()),
+        )
 
     def _on_search_confirmed(self, text: str) -> None:
         match_count = self.channel_table.mark_matching_channels(text)
-        self.search_bar.set_match_count(match_count, len(self.channel_table.get_channels()))
+        self.search_bar.set_match_status(
+            self.channel_table.get_current_match_index(),
+            match_count,
+            len(self.channel_table.get_channels()),
+        )
 
         if match_count == 0:
             self.status_bar.showMessage(t("T142"), 4000)  # Kanal bulunamadı
@@ -364,7 +385,8 @@ class MainWindow(QMainWindow):
             self.status_bar.showMessage(f"{match_count} {t('T143')}", 4000)  # X Kanal bulundu ve işaretlendi
 
     def _on_search_cleared(self) -> None:
-        self.search_bar.set_match_count(0, len(self.channel_table.get_channels()))
+        self.channel_table.clear_search_matches()
+        self.search_bar.set_match_status(-1, 0, len(self.channel_table.get_channels()))
 
     def open_file(self) -> None:
         file_path, _ = QFileDialog.getOpenFileName(

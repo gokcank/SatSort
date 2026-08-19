@@ -350,7 +350,9 @@ class TestComprehensiveSatSort(unittest.TestCase):
 
         # Search for "TRT"
         search_bar._search_input.setText("TRT")
-        self.assertIn("2 / 5", search_bar._count_label.text())
+        self.assertIn("1 / 2", search_bar._count_label.text())
+        self.assertEqual(len(table.get_search_matches()), 2)
+        self.assertEqual(table.get_current_match_index(), 0)
 
         # Confirm search (simulate Enter) -> marks 2 channels as checked
         self.win._on_search_confirmed("TRT")
@@ -361,6 +363,39 @@ class TestComprehensiveSatSort(unittest.TestCase):
         # Clear search
         search_bar.clear()
         self.assertEqual(search_bar.get_text(), "")
+        self.assertEqual(len(table.get_search_matches()), 0)
+
+    def test_search_navigation_prev_next(self):
+        search_bar = self.win.search_bar
+        table = self.win.channel_table
+
+        # Search for "HD" (matches TRT 1 HD (0), TRT HABER HD (1), ATV HD (2))
+        search_bar._search_input.setText("HD")
+        self.assertEqual(len(table.get_search_matches()), 3)
+        self.assertEqual(table.get_current_match_index(), 0)
+        self.assertEqual(table.get_selected_channel().channel_name, "TRT 1 HD")
+
+        # Next match -> TRT HABER HD (idx 1)
+        self.win._on_search_next()
+        self.assertEqual(table.get_current_match_index(), 1)
+        self.assertEqual(table.get_selected_channel().channel_name, "TRT HABER HD")
+        self.assertIn("2 / 3", search_bar._count_label.text())
+
+        # Next match -> ATV HD (idx 2)
+        self.win._on_search_next()
+        self.assertEqual(table.get_current_match_index(), 2)
+        self.assertEqual(table.get_selected_channel().channel_name, "ATV HD")
+        self.assertIn("3 / 3", search_bar._count_label.text())
+
+        # Next match wraps around -> TRT 1 HD (idx 0)
+        self.win._on_search_next()
+        self.assertEqual(table.get_current_match_index(), 0)
+        self.assertEqual(table.get_selected_channel().channel_name, "TRT 1 HD")
+
+        # Prev match wraps backwards -> ATV HD (idx 2)
+        self.win._on_search_prev()
+        self.assertEqual(table.get_current_match_index(), 2)
+        self.assertEqual(table.get_selected_channel().channel_name, "ATV HD")
 
     def test_drag_and_drop_after_search(self):
         search_bar = self.win.search_bar

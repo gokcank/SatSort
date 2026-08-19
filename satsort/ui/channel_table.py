@@ -48,8 +48,10 @@ class ChannelTableWidget(QTableWidget):
         super().__init__(parent)
         self._channels: List[Channel] = []
         self._is_updating = False
-        self._drag_active: bool = False
+        self._drag_active = False
         self._drop_target_row: Optional[int] = None
+        self._search_match_rows: List[int] = []
+        self._current_match_index: int = -1
 
         self._setup_ui()
         self._connect_signals()
@@ -510,6 +512,75 @@ class ChannelTableWidget(QTableWidget):
             self.check_all()
             return True
 
+    def search_channels(self, query: str) -> List[int]:
+        """
+        Finds all channels matching the query (substring in channel_name),
+        updates match state, highlights first match and repaints scrollbar ticks.
+        """
+        lower_q = query.strip().lower()
+        if not lower_q:
+            self.clear_search_matches()
+            return []
+
+        self._search_match_rows = [
+            i for i, ch in enumerate(self._channels)
+            if lower_q in ch.channel_name.lower()
+        ]
+
+        if self._search_match_rows:
+            self._current_match_index = 0
+            first_row = self._search_match_rows[0]
+            self.selectRow(first_row)
+            first_item = self.item(first_row, 0)
+            if first_item:
+                self.scrollToItem(first_item)
+        else:
+            self._current_match_index = -1
+
+        self.viewport().update()
+        return self._search_match_rows
+
+    def goto_next_match(self) -> int:
+        """Navigates to the next matching channel row in search results."""
+        if not self._search_match_rows:
+            return -1
+
+        self._current_match_index = (self._current_match_index + 1) % len(self._search_match_rows)
+        target_row = self._search_match_rows[self._current_match_index]
+        self.selectRow(target_row)
+        item = self.item(target_row, 0)
+        if item:
+            self.scrollToItem(item)
+
+        self.viewport().update()
+        return self._current_match_index
+
+    def goto_prev_match(self) -> int:
+        """Navigates to the previous matching channel row in search results."""
+        if not self._search_match_rows:
+            return -1
+
+        self._current_match_index = (self._current_match_index - 1 + len(self._search_match_rows)) % len(self._search_match_rows)
+        target_row = self._search_match_rows[self._current_match_index]
+        self.selectRow(target_row)
+        item = self.item(target_row, 0)
+        if item:
+            self.scrollToItem(item)
+
+        self.viewport().update()
+        return self._current_match_index
+
+    def get_search_matches(self) -> List[int]:
+        return list(self._search_match_rows)
+
+    def get_current_match_index(self) -> int:
+        return self._current_match_index
+
+    def clear_search_matches(self) -> None:
+        self._search_match_rows = []
+        self._current_match_index = -1
+        self.viewport().update()
+
     def mark_matching_channels(self, query: str) -> int:
         """Marks matching channels as checked in-place without rebuilding the table."""
         lower_q = query.strip().lower()
@@ -623,6 +694,7 @@ class ChannelTableWidget(QTableWidget):
 
     def paintEvent(self, event) -> None:
         super().paintEvent(event)
+        # 1. Draw Drag-and-drop indicator line
         if self._drag_active and self._drop_target_row is not None and self.rowCount() > 0:
             painter = QPainter(self.viewport())
             painter.setRenderHint(QPainter.Antialiasing)
@@ -649,6 +721,23 @@ class ChannelTableWidget(QTableWidget):
             painter.setBrush(QColor(56, 189, 248))
             painter.drawEllipse(QPoint(6, line_y), 4, 4)
             painter.drawEllipse(QPoint(width - 6, line_y), 4, 4)
+            painter.end()
+
+        # 2. Draw search result scrollbar tick marks along right edge
+        if self._search_match_rows and self.rowCount() > 0:
+            painter = QPainter(self.viewport())
+            painter.setRenderHint(QPainter.Antialiasing)
+            vw = self.viewport().width()
+            vh = self.viewport().height()
+            total_rows = self.rowCount()
+            for r in self._search_match_rows:
+                y_ratio = r / max(1, total_rows)
+                tick_y = int(y_ratio * vh)
+                is_current = (self._current_match_index >= 0 and r == self._search_match_rows[self._current_match_index])
+                color = QColor(251, 146, 60, 255) if is_current else QColor(56, 189, 248, 200)
+                pen = QPen(color, 3 if is_current else 2)
+                painter.setPen(pen)
+                painter.drawLine(vw - 8, tick_y, vw - 1, tick_y)
             painter.end()
 
     def contextMenuEvent(self, event) -> None:
