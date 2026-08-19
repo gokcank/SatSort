@@ -487,6 +487,29 @@ class ChannelTableWidget(QTableWidget):
         self._is_updating = False
         self.channels_updated.emit()
 
+    def is_all_checked(self) -> bool:
+        """Returns True if all channels are checked (and at least one channel exists)."""
+        if not self._channels:
+            return False
+        return all(ch.is_checked for ch in self._channels)
+
+    def toggle_all_checked(self) -> bool:
+        """
+        Toggles check state for all channels:
+        If all channels are checked, unchecks all.
+        Otherwise, checks all channels.
+        Returns True if channels are now all checked, False otherwise.
+        """
+        if not self._channels:
+            return False
+
+        if self.is_all_checked():
+            self.uncheck_all()
+            return False
+        else:
+            self.check_all()
+            return True
+
     def mark_matching_channels(self, query: str) -> int:
         """Marks matching channels as checked in-place without rebuilding the table."""
         lower_q = query.strip().lower()

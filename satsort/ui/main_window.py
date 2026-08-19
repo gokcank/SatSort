@@ -142,9 +142,10 @@ class MainWindow(QMainWindow):
 
         self.menu_edit.addSeparator()
 
-        self.act_uncheck_all = QAction("⚪ " + t("T108"), self)
-        self.act_uncheck_all.triggered.connect(self.channel_table.uncheck_all)
-        self.menu_edit.addAction(self.act_uncheck_all)
+        self.act_toggle_check = QAction("☑️ Tümünü İşaretle", self)
+        self.act_toggle_check.setShortcut(QKeySequence("Ctrl+A"))
+        self.act_toggle_check.triggered.connect(self.channel_table.toggle_all_checked)
+        self.menu_edit.addAction(self.act_toggle_check)
 
         # 3. Tools Menu
         self.menu_tools = menu_bar.addMenu(t("T103"))  # Çoklu İşlemler
@@ -206,7 +207,7 @@ class MainWindow(QMainWindow):
         self.toolbar.addAction(self.act_move_down)
         self.toolbar.addSeparator()
         self.toolbar.addAction(self.act_del_sel)
-        self.toolbar.addAction(self.act_uncheck_all)
+        self.toolbar.addAction(self.act_toggle_check)
         self.toolbar.addSeparator()
         self.toolbar.addAction(self.act_compare)
         self.toolbar.addAction(self.act_import)
@@ -334,6 +335,15 @@ class MainWindow(QMainWindow):
         selected_ch = self.channel_table.get_selected_channel()
         if selected_ch:
             self.sidebar.set_channel(selected_ch, channels)
+
+        # Synchronize toggle check all / uncheck all action state
+        if hasattr(self, "act_toggle_check"):
+            if channels and checked_count == len(channels):
+                self.act_toggle_check.setText("⚪ " + t("T108"))  # İşaretleri Kaldır
+                self.act_toggle_check.setToolTip(t("T108") + " (Ctrl+A)")
+            else:
+                self.act_toggle_check.setText("☑️ Tümünü İşaretle")
+                self.act_toggle_check.setToolTip("Tüm kanalları işaretle (Ctrl+A)")
 
     def _on_search_text_changed(self, text: str) -> None:
         channels = self.channel_table.get_channels()
