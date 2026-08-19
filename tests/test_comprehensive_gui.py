@@ -413,6 +413,36 @@ class TestComprehensiveSatSort(unittest.TestCase):
         self.assertEqual(channels[2].channel_name, "TRT 1 HD")
         self.assertEqual(channels[0].channel_name, "TRT HABER HD")
 
+    def test_search_preserves_existing_user_checked_channels(self):
+        search_bar = self.win.search_bar
+        table = self.win.channel_table
+
+        # 1. User manually checks KRAL FM (idx 3)
+        channels = table.get_channels()
+        channels[3].is_checked = True
+        table.set_channels(channels)
+        self.assertEqual(len(table.get_checked_channels()), 1)
+        self.assertEqual(table.get_checked_channels()[0].channel_name, "KRAL FM")
+
+        # 2. Live typing "TRT" does NOT overwrite or clear KRAL FM
+        search_bar._search_input.setText("TRT")
+        self.assertEqual(len(table.get_checked_channels()), 1)
+        self.assertEqual(table.get_checked_channels()[0].channel_name, "KRAL FM")
+
+        # 3. Batch mark "TRT" -> adds TRT 1 HD and TRT HABER HD, KRAL FM is still checked!
+        self.win._on_search_confirmed("TRT")
+        checked_names = [c.channel_name for c in table.get_checked_channels()]
+        self.assertEqual(len(checked_names), 3)
+        self.assertIn("KRAL FM", checked_names)
+        self.assertIn("TRT 1 HD", checked_names)
+        self.assertIn("TRT HABER HD", checked_names)
+
+        # 4. Clearing search bar does NOT uncheck any channels
+        search_bar.clear()
+        checked_names_after_clear = [c.channel_name for c in table.get_checked_channels()]
+        self.assertEqual(len(checked_names_after_clear), 3)
+        self.assertIn("KRAL FM", checked_names_after_clear)
+
     # -------------------------------------------------------------
     # 4. SIDEBAR & TRANSPONDER SYNCHRONIZATION
     # -------------------------------------------------------------

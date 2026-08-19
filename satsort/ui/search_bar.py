@@ -115,6 +115,33 @@ class SearchBarWidget(QWidget):
         """)
         layout.addWidget(self._btn_next)
 
+        # Batch Mark Matches Button
+        self._btn_mark_all = QPushButton("☑️")
+        self._btn_mark_all.setToolTip("Eşleşenleri İşaretle (Ctrl+Enter)")
+        self._btn_mark_all.setEnabled(False)
+        self._btn_mark_all.setFixedSize(28, 28)
+        self._btn_mark_all.setStyleSheet("""
+            QPushButton {
+                background-color: #1e293b;
+                color: #94a3b8;
+                border: 1px solid #334155;
+                border-radius: 4px;
+                font-size: 11px;
+                font-weight: bold;
+            }
+            QPushButton:hover:enabled {
+                background-color: #164e63;
+                color: #38bdf8;
+                border-color: #0891b2;
+            }
+            QPushButton:disabled {
+                color: #475569;
+                background-color: #0f172a;
+                border-color: #1e293b;
+            }
+        """)
+        layout.addWidget(self._btn_mark_all)
+
         # Match Count Badge Label
         self._count_label = QLabel("")
         self._count_label.setStyleSheet("""
@@ -136,6 +163,7 @@ class SearchBarWidget(QWidget):
         self._search_input.returnPressed.connect(self._on_return_pressed)
         self._btn_prev.clicked.connect(self.prev_match_requested.emit)
         self._btn_next.clicked.connect(self.next_match_requested.emit)
+        self._btn_mark_all.clicked.connect(lambda: self.search_confirmed.emit(self.get_text()))
 
     def _on_text_changed(self, text: str) -> None:
         clean = text.strip()
@@ -143,6 +171,7 @@ class SearchBarWidget(QWidget):
             self._count_label.setVisible(False)
             self._btn_prev.setEnabled(False)
             self._btn_next.setEnabled(False)
+            self._btn_mark_all.setEnabled(False)
             self.clear_requested.emit()
         else:
             self.text_changed.emit(clean)
@@ -150,10 +179,7 @@ class SearchBarWidget(QWidget):
     def _on_return_pressed(self) -> None:
         clean = self._search_input.text().strip()
         if clean:
-            if self._btn_next.isEnabled():
-                self.next_match_requested.emit()
-            else:
-                self.search_confirmed.emit(clean)
+            self.next_match_requested.emit()
 
     def set_match_status(self, current_index: int, match_count: int, total: int) -> None:
         """Updates badge and navigation buttons based on current match index and total matches."""
@@ -162,11 +188,13 @@ class SearchBarWidget(QWidget):
             self._count_label.setVisible(False)
             self._btn_prev.setEnabled(False)
             self._btn_next.setEnabled(False)
+            self._btn_mark_all.setEnabled(False)
             return
 
         has_matches = match_count > 0
         self._btn_prev.setEnabled(has_matches)
         self._btn_next.setEnabled(has_matches)
+        self._btn_mark_all.setEnabled(has_matches)
 
         if has_matches:
             if current_index >= 0:
@@ -211,4 +239,5 @@ class SearchBarWidget(QWidget):
         self._count_label.setVisible(False)
         self._btn_prev.setEnabled(False)
         self._btn_next.setEnabled(False)
+        self._btn_mark_all.setEnabled(False)
 
