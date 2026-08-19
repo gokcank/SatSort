@@ -570,8 +570,64 @@ class MainWindow(QMainWindow):
     def show_about(self) -> None:
         AboutDialog(self).exec()
 
+    def retranslate_ui(self) -> None:
+        """Dynamically retranslates all menus, actions, tooltips, tables and subcomponents."""
+        self._update_window_title()
+
+        # Menus
+        self.menu_file.setTitle(t("T100"))
+        self.menu_edit.setTitle("Düzenle" if i18n.current_language == "Türkçe" else ("Edit" if i18n.current_language == "English" else ("Bearbeiten" if i18n.current_language == "Deutsch" else "Éditer")))
+        self.menu_tools.setTitle(t("T103"))
+        self.menu_view.setTitle("Görünüm" if i18n.current_language == "Türkçe" else ("View" if i18n.current_language == "English" else ("Ansicht" if i18n.current_language == "Deutsch" else "Affichage")))
+        self.menu_lang.setTitle("🌐 " + t("T168"))
+        self.menu_help.setTitle("Yardım" if i18n.current_language == "Türkçe" else ("Help" if i18n.current_language == "English" else ("Hilfe" if i18n.current_language == "Deutsch" else "Aide")))
+
+        # File actions
+        self.act_open.setText("📂 " + t("T101"))
+        self.act_open.setToolTip(f"{t('T101')} (Ctrl+O)")
+
+        self.act_save.setText("💾 " + t("T102"))
+        self.act_save.setToolTip(f"{t('T102')} (Ctrl+S)")
+
+        self.act_close_list.setText("❌ " + t("T107"))
+        self.act_close_list.setToolTip(f"{t('T107')} (Ctrl+W)")
+
+        self.act_quit.setText("🚪 " + t("T107"))
+        self.act_quit.setToolTip(f"{t('T107')} (Ctrl+Q)")
+
+        # Edit actions
+        self.act_move_up.setText("⬆️ " + t("T109"))
+        self.act_move_up.setToolTip(f"{t('T109')} (Alt+Up)")
+
+        self.act_move_down.setText("⬇️ " + t("T110"))
+        self.act_move_down.setToolTip(f"{t('T110')} (Alt+Down)")
+
+        self.act_del_sel.setText("🗑️ " + t("T111"))
+        self.act_del_sel.setToolTip(f"{t('T111')} (Delete)")
+
+        self.act_del_chk.setText("❌ " + t("T112"))
+        self.act_del_chk.setToolTip(t("T112"))
+
+        self.act_compare.setText("📊 " + t("T104"))
+        self.act_compare.setToolTip(f"{t('T104')} (Ctrl+K)")
+
+        self.act_import.setText("📥 " + t("T105"))
+        self.act_import.setToolTip(f"{t('T105')} (Ctrl+I)")
+
+        self.act_toggle_sidebar.setText("📑 " + t("T119"))
+        self.act_toggle_sidebar.setToolTip(f"{t('T119')} (F4)")
+
+        self.act_about.setText("ℹ️ " + t("T106"))
+        self.act_about.setToolTip(f"{t('T106')} (F1)")
+
+        # Subcomponents
+        self._rebuild_language_menu()
+        self.search_bar.retranslate_ui()
+        self.channel_table.retranslate_ui()
+        self.sidebar.retranslate_ui()
+        self._update_channel_counts()
+
     def _on_language_changed(self, new_lang: str) -> None:
         """Updates all UI text dynamically when language is switched."""
-        self._rebuild_language_menu()
-        self.channel_table.set_channels(self.channel_table.get_channels())
-        self._update_channel_counts()
+        self.retranslate_ui()
+

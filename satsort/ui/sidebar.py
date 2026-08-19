@@ -26,10 +26,32 @@ from ..i18n import t
 class ChannelParametersWidget(QGroupBox):
     """Displays comprehensive technical parameters of the selected satellite channel."""
 
+    PARAM_KEYS = [
+        ("T122", "satellite_name"),   # Uydu Adı
+        ("T123", "channel_name"),     # Kanal Adı
+        ("T124", "channel_type"),     # Kanal Tipi
+        ("T125", "broadcast_system"), # Broadcast Sistem
+        ("T126", "frequency"),        # Frekans
+        ("T127", "polarization"),     # Polarizasyon
+        ("T128", "symbol_rate"),      # Sembol Oranı
+        ("T129", "fec"),              # FEC
+        ("T130", "vpid"),             # VPID
+        ("T131", "apid"),             # APID
+        ("T132", "pcrp"),             # PCRP
+        ("T133", "sid"),              # SID
+        ("T134", "nid"),              # NID
+        ("T135", "tsid"),             # TSID
+        ("T136", "language"),         # Dil
+        ("T137", "country_code"),     # Ülke Kodu
+        ("T138", "language_code"),    # Dil Kodu
+        ("T139", "crypto"),           # Kripto
+    ]
+
     def __init__(self, parent=None) -> None:
         super().__init__(parent)
         self.setTitle(t("T119"))  # Kanal Parametreleri / Channel Parameters
         self._value_labels: Dict[str, QLabel] = {}
+        self._title_labels: Dict[str, QLabel] = {}
         self._setup_ui()
 
     def _setup_ui(self) -> None:
@@ -38,34 +60,14 @@ class ChannelParametersWidget(QGroupBox):
         layout.setHorizontalSpacing(10)
         layout.setVerticalSpacing(6)
 
-        param_keys = [
-            ("T122", "satellite_name"),   # Uydu Adı
-            ("T123", "channel_name"),     # Kanal Adı
-            ("T124", "channel_type"),     # Kanal Tipi
-            ("T125", "broadcast_system"), # Broadcast Sistem
-            ("T126", "frequency"),        # Frekans
-            ("T127", "polarization"),     # Polarizasyon
-            ("T128", "symbol_rate"),      # Sembol Oranı
-            ("T129", "fec"),              # FEC
-            ("T130", "vpid"),             # VPID
-            ("T131", "apid"),             # APID
-            ("T132", "pcrp"),             # PCRP
-            ("T133", "sid"),              # SID
-            ("T134", "nid"),              # NID
-            ("T135", "tsid"),             # TSID
-            ("T136", "language"),         # Dil
-            ("T137", "country_code"),     # Ülke Kodu
-            ("T138", "language_code"),    # Dil Kodu
-            ("T139", "crypto"),           # Kripto
-        ]
-
         bold_font = QFont()
         bold_font.setBold(True)
 
-        for row, (i18n_key, attr_name) in enumerate(param_keys):
+        for row, (i18n_key, attr_name) in enumerate(self.PARAM_KEYS):
             lbl_title = QLabel(t(i18n_key) + ":")
             lbl_title.setStyleSheet("color: #94a3b8; font-size: 12px;")
             layout.addWidget(lbl_title, row, 0)
+            self._title_labels[attr_name] = lbl_title
 
             lbl_val = QLabel("-")
             lbl_val.setStyleSheet("color: #f1f5f9; font-size: 12px; font-weight: bold;")
@@ -73,6 +75,12 @@ class ChannelParametersWidget(QGroupBox):
             layout.addWidget(lbl_val, row, 1)
 
             self._value_labels[attr_name] = lbl_val
+
+    def retranslate_ui(self) -> None:
+        self.setTitle(t("T119"))
+        for i18n_key, attr_name in self.PARAM_KEYS:
+            if attr_name in self._title_labels:
+                self._title_labels[attr_name].setText(t(i18n_key) + ":")
 
     def set_channel(self, channel: Optional[Channel]) -> None:
         if not channel:
@@ -151,6 +159,9 @@ class TransponderChannelsWidget(QGroupBox):
         self.list_widget.itemDoubleClicked.connect(self._on_item_clicked)
         layout.addWidget(self.list_widget)
 
+    def retranslate_ui(self) -> None:
+        self.setTitle(t("T120"))
+
     def update_transponder_channels(
         self, selected_channel: Optional[Channel], all_channels: List[Channel]
     ) -> None:
@@ -216,6 +227,11 @@ class SidebarWidget(QWidget):
         self.params_widget.set_channel(channel)
         self.transponder_widget.update_transponder_channels(channel, all_channels)
 
+    def retranslate_ui(self) -> None:
+        self.params_widget.retranslate_ui()
+        self.transponder_widget.retranslate_ui()
+
     def clear(self) -> None:
         self.params_widget.clear()
+
         self.transponder_widget.list_widget.clear()

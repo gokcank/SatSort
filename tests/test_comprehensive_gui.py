@@ -548,16 +548,30 @@ class TestComprehensiveSatSort(unittest.TestCase):
         self.assertEqual(len(dlg._inserted_channels), 2)  # TRT 1 4K & KRAL FM
         self.assertIn("KRAL FM", [c.channel_name for c in dlg._inserted_channels])
 
-    def test_language_selection_dialog(self):
-        dlg = LanguageSelectionDialog()
-        dlg.combo.setCurrentText("English")
-        dlg._on_accept()
+    def test_language_selection_dialog_and_live_retranslation(self):
+        # 1. Switch to English
+        i18n.set_language("English")
         self.assertEqual(i18n.current_language, "English")
-        self.assertEqual(t("T100"), "Menu")
+        self.assertEqual(self.win.menu_file.title(), "Menu")
+        self.assertIn("Load SatcoDx", self.win.act_open.text())
+        self.assertEqual(self.win.channel_table.horizontalHeaderItem(0).text(), "Order")
+        self.assertEqual(self.win.sidebar.params_widget.title(), "Channel Parameters")
 
-        # Switch back to Turkish
+        # 2. Switch to German
+        i18n.set_language("Deutsch")
+        self.assertEqual(i18n.current_language, "Deutsch")
+        self.assertEqual(self.win.menu_file.title(), "Menu")
+        self.assertIn("SatcoDX Datei öffnen", self.win.act_open.text())
+        self.assertEqual(self.win.channel_table.horizontalHeaderItem(0).text(), "Nummer")
+        self.assertEqual(self.win.sidebar.params_widget.title(), "Kanal Parameter")
+
+        # 3. Switch back to Turkish
         i18n.set_language("Türkçe")
-        self.assertEqual(t("T100"), "Menü")
+        self.assertEqual(i18n.current_language, "Türkçe")
+        self.assertEqual(self.win.menu_file.title(), "Menü")
+        self.assertIn("SatcoDx Yükle", self.win.act_open.text())
+        self.assertEqual(self.win.channel_table.horizontalHeaderItem(0).text(), "Sıra")
+        self.assertEqual(self.win.sidebar.params_widget.title(), "Kanal Parametreleri")
 
     def test_about_dialog(self):
         dlg = AboutDialog()

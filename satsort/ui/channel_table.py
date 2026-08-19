@@ -813,3 +813,20 @@ class ChannelTableWidget(QTableWidget):
         menu.addAction(act_uncheck)
 
         menu.exec(event.globalPos())
+
+    def retranslate_ui(self) -> None:
+        """Updates table headers on language switch."""
+        headers = [
+            t("T117"),  # Sıra / Order
+            "✓",        # Check
+            t("T124"),  # Tip / Type
+            t("T123"),  # Kanal Adı / Name
+            t("T122"),  # Uydu / Satellite
+            t("T126"),  # Frekans / Frequency
+            t("T127"),  # Polarizasyon / Pol
+            t("T128"),  # Sembol Oranı / SR
+            t("T129"),  # FEC
+            t("T139"),  # Kripto / Crypto
+        ]
+        self.setHorizontalHeaderLabels(headers)
+

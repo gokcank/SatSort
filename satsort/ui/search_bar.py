@@ -241,3 +241,11 @@ class SearchBarWidget(QWidget):
         self._btn_next.setEnabled(False)
         self._btn_mark_all.setEnabled(False)
 
+    def retranslate_ui(self) -> None:
+        """Dynamically retranslates placeholder, tooltips and labels."""
+        self._search_input.setPlaceholderText(f"{t('T118')}... (Enter: Next / Mark)")
+        self._btn_prev.setToolTip(f"{t('T109')} (Shift+Enter)")
+        self._btn_next.setToolTip(f"{t('T110')} (Enter)")
+        self._btn_mark_all.setToolTip(f"{t('T143')} (Ctrl+Enter)")
+
+
