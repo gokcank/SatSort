@@ -133,7 +133,7 @@ class MainWindow(QMainWindow):
 
         self.act_del_sel = QAction("🗑️ " + t("T111"), self)
         self.act_del_sel.setShortcut(QKeySequence.Delete)
-        self.act_del_sel.triggered.connect(self.channel_table.delete_selected)
+        self.act_del_sel.triggered.connect(self.channel_table.smart_delete)
         self.menu_edit.addAction(self.act_del_sel)
 
         self.act_del_chk = QAction("❌ " + t("T112"), self)

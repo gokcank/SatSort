@@ -421,6 +421,25 @@ class ChannelTableWidget(QTableWidget):
         self.channels_updated.emit()
         return True
 
+    def smart_delete(self) -> int:
+        """
+        Deletes checked channels if any are checked; otherwise deletes selected rows.
+        Returns the number of deleted channels.
+        """
+        checked_indices = self.get_checked_row_indices()
+        if checked_indices:
+            deleted_count = len(checked_indices)
+            self.delete_checked()
+            return deleted_count
+
+        selected_indices = self.get_selected_row_indices()
+        if selected_indices:
+            deleted_count = len(selected_indices)
+            self.delete_selected()
+            return deleted_count
+
+        return 0
+
     def delete_selected(self) -> None:
         rows = self.get_selected_row_indices()
         if not rows:
@@ -429,6 +448,10 @@ class ChannelTableWidget(QTableWidget):
             if 0 <= r < len(self._channels):
                 self._channels.pop(r)
         self.set_channels(self._channels)
+        if self._channels:
+            next_row = min(rows[0], len(self._channels) - 1)
+            self.selectRow(next_row)
+        self.channels_updated.emit()
 
     def delete_checked(self) -> None:
         checked_indices = self.get_checked_row_indices()
@@ -437,6 +460,10 @@ class ChannelTableWidget(QTableWidget):
         for r in reversed(checked_indices):
             self._channels.pop(r)
         self.set_channels(self._channels)
+        if self._channels:
+            next_row = min(checked_indices[0], len(self._channels) - 1)
+            self.selectRow(next_row)
+        self.channels_updated.emit()
 
     def uncheck_all(self) -> None:
         self._is_updating = True
@@ -602,7 +629,7 @@ class ChannelTableWidget(QTableWidget):
             painter.end()
 
     def contextMenuEvent(self, event) -> None:
-        """Renders the contextual right-click menu."""
+        """Renders the dynamic contextual right-click menu."""
         clicked_row = self.rowAt(event.pos().y())
         if clicked_row != -1:
             self.selectRow(clicked_row)
@@ -613,7 +640,8 @@ class ChannelTableWidget(QTableWidget):
         menu = QMenu(self)
         selected_ch = self._channels[target_row] if (0 <= target_row < len(self._channels)) else self.get_selected_channel()
         has_selection = selected_ch is not None and target_row != -1
-        has_checked = len(self.get_checked_row_indices()) > 0
+        checked_indices = self.get_checked_row_indices()
+        checked_count = len(checked_indices)
 
         # Actions
         act_up = QAction(t("T109"), self)  # Yukarı Taşı
@@ -633,10 +661,10 @@ class ChannelTableWidget(QTableWidget):
         act_move_sel.triggered.connect(lambda: QTimer.singleShot(0, lambda: self.request_move.emit(False)))
         menu.addAction(act_move_sel)
 
-        act_move_chk = QAction(t("T114"), self)  # İşaretli Kanalları Taşı
-        act_move_chk.setEnabled(has_checked)
-        act_move_chk.triggered.connect(lambda: QTimer.singleShot(0, lambda: self.request_move.emit(True)))
-        menu.addAction(act_move_chk)
+        if checked_count > 0:
+            act_move_chk = QAction(f"{t('T114')} ({checked_count})", self)  # İşaretli Kanalları Taşı (X)
+            act_move_chk.triggered.connect(lambda: QTimer.singleShot(0, lambda: self.request_move.emit(True)))
+            menu.addAction(act_move_chk)
 
         act_swap = QAction(t("T115"), self)  # Takas Et
         act_swap.setEnabled(has_selection)
@@ -654,19 +682,21 @@ class ChannelTableWidget(QTableWidget):
 
         menu.addSeparator()
 
-        act_del_sel = QAction(t("T111"), self)  # Seçiliyi Sil
-        act_del_sel.setEnabled(has_selection)
-        act_del_sel.triggered.connect(lambda: QTimer.singleShot(0, self.delete_selected))
-        menu.addAction(act_del_sel)
+        # Dynamic Delete options
+        act_del_single = QAction("🗑️ " + t("T111"), self)  # Bu Kanalı Sil / Seçiliyi Sil
+        act_del_single.setEnabled(has_selection)
+        act_del_single.triggered.connect(lambda: QTimer.singleShot(0, self.delete_selected))
+        menu.addAction(act_del_single)
 
-        act_del_chk = QAction(t("T112"), self)  # İşaretlileri Sil
-        act_del_chk.setEnabled(has_checked)
-        act_del_chk.triggered.connect(lambda: QTimer.singleShot(0, self.delete_checked))
-        menu.addAction(act_del_chk)
+        if checked_count > 0:
+            act_del_chk = QAction(f"❌ {t('T112')} ({checked_count} {t('T118')})", self)  # İşaretli Kanalları Sil (X Kanal)
+            act_del_chk.triggered.connect(lambda: QTimer.singleShot(0, self.delete_checked))
+            menu.addAction(act_del_chk)
 
         menu.addSeparator()
 
         act_uncheck = QAction(t("T108"), self)  # Tüm İşaretleri Kaldır
+        act_uncheck.setEnabled(checked_count > 0)
         act_uncheck.triggered.connect(lambda: QTimer.singleShot(0, self.uncheck_all))
         menu.addAction(act_uncheck)
 

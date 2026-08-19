@@ -299,6 +299,28 @@ class TestComprehensiveSatSort(unittest.TestCase):
         self.assertEqual(table.rowCount(), 3)
         self.assertNotIn("ATV HD", [c.channel_name for c in table.get_channels()])
 
+    def test_smart_delete_prefers_checked_over_selected(self):
+        table = self.win.channel_table
+        # Table has 5 channels. Select row 0 (TRT 1 HD), but check row 2 (ATV HD)
+        table.selectRow(0)
+        channels = table.get_channels()
+        channels[2].is_checked = True
+        table.set_channels(channels)
+        table.selectRow(0)
+
+        # smart_delete should delete the checked channel (ATV HD), not the selected one (TRT 1 HD)
+        deleted = table.smart_delete()
+        self.assertEqual(deleted, 1)
+        remaining = [c.channel_name for c in table.get_channels()]
+        self.assertIn("TRT 1 HD", remaining)
+        self.assertNotIn("ATV HD", remaining)
+
+        # Now with no checked channels, smart_delete should delete selected row
+        table.selectRow(0)
+        deleted = table.smart_delete()
+        self.assertEqual(deleted, 1)
+        self.assertNotIn("TRT 1 HD", [c.channel_name for c in table.get_channels()])
+
     # -------------------------------------------------------------
     # 3. SEARCH BAR & LIVE FILTERING
     # -------------------------------------------------------------
