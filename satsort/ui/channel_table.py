@@ -508,12 +508,15 @@ class ChannelTableWidget(QTableWidget):
     def contextMenuEvent(self, event) -> None:
         """Renders the contextual right-click menu."""
         clicked_row = self.rowAt(event.pos().y())
-        if clicked_row != -1 and clicked_row not in self.get_selected_row_indices():
+        if clicked_row != -1:
             self.selectRow(clicked_row)
 
+        sel_indices = self.get_selected_row_indices()
+        target_row = clicked_row if clicked_row != -1 else (sel_indices[0] if sel_indices else -1)
+
         menu = QMenu(self)
-        selected_ch = self.get_selected_channel()
-        has_selection = selected_ch is not None
+        selected_ch = self._channels[target_row] if (0 <= target_row < len(self._channels)) else self.get_selected_channel()
+        has_selection = selected_ch is not None and target_row != -1
         has_checked = len(self.get_checked_row_indices()) > 0
 
         # Actions
@@ -539,12 +542,9 @@ class ChannelTableWidget(QTableWidget):
         act_move_chk.triggered.connect(lambda: QTimer.singleShot(0, lambda: self.request_move.emit(True)))
         menu.addAction(act_move_chk)
 
-        sel_indices = self.get_selected_row_indices()
-        sel_row = sel_indices[0] if sel_indices else 0
-
         act_swap = QAction(t("T115"), self)  # Takas Et
         act_swap.setEnabled(has_selection)
-        act_swap.triggered.connect(lambda r=sel_row: QTimer.singleShot(0, lambda: self.request_swap.emit(r)))
+        act_swap.triggered.connect(lambda checked=False, r=target_row: self.request_swap.emit(r))
         menu.addAction(act_swap)
 
         menu.addSeparator()
@@ -552,7 +552,7 @@ class ChannelTableWidget(QTableWidget):
         act_rename = QAction(t("T116"), self)  # Kanal Adını Değiştir
         act_rename.setEnabled(has_selection)
         act_rename.triggered.connect(
-            lambda r=sel_row, c=selected_ch: QTimer.singleShot(0, lambda: self.request_rename.emit(r, c))
+            lambda checked=False, r=target_row, c=selected_ch: self.request_rename.emit(r, c) if c else None
         )
         menu.addAction(act_rename)
 
