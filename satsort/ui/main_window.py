@@ -97,16 +97,19 @@ class MainWindow(QMainWindow):
         self.menu_file = menu_bar.addMenu(t("T100"))  # Menü / Menu
         self.act_open = QAction("📂 Listeyi Aç", self)
         self.act_open.setShortcut(QKeySequence.Open)
+        self.act_open.setToolTip("SDX Kanal Listesi Aç (Ctrl+O)")
         self.act_open.triggered.connect(self.open_file)
         self.menu_file.addAction(self.act_open)
 
         self.act_save = QAction("💾 Listeyi Kaydet", self)
         self.act_save.setShortcut(QKeySequence.Save)
+        self.act_save.setToolTip("Kanal Listesini Kaydet (Ctrl+S)")
         self.act_save.triggered.connect(self.save_file)
         self.menu_file.addAction(self.act_save)
 
         self.act_close_list = QAction("❌ Listeyi Kapat", self)
         self.act_close_list.setShortcut(QKeySequence.Close)
+        self.act_close_list.setToolTip("Açık Kanal Listesini Kapat (Ctrl+W)")
         self.act_close_list.triggered.connect(self.close_file)
         self.menu_file.addAction(self.act_close_list)
 
@@ -114,6 +117,7 @@ class MainWindow(QMainWindow):
 
         self.act_quit = QAction("🚪 Çıkış", self)
         self.act_quit.setShortcut(QKeySequence.Quit)
+        self.act_quit.setToolTip("Uygulamadan Çık (Ctrl+Q)")
         self.act_quit.triggered.connect(self.close)
         self.menu_file.addAction(self.act_quit)
 
@@ -121,11 +125,13 @@ class MainWindow(QMainWindow):
         self.menu_edit = menu_bar.addMenu("Düzenle")
         self.act_move_up = QAction("⬆️ " + t("T109"), self)
         self.act_move_up.setShortcut("Alt+Up")
+        self.act_move_up.setToolTip("Seçili Kanalı Yukarı Taşı (Alt+Up)")
         self.act_move_up.triggered.connect(self.channel_table.move_selected_up)
         self.menu_edit.addAction(self.act_move_up)
 
         self.act_move_down = QAction("⬇️ " + t("T110"), self)
         self.act_move_down.setShortcut("Alt+Down")
+        self.act_move_down.setToolTip("Seçili Kanalı Aşağı Taşı (Alt+Down)")
         self.act_move_down.triggered.connect(self.channel_table.move_selected_down)
         self.menu_edit.addAction(self.act_move_down)
 
@@ -133,10 +139,12 @@ class MainWindow(QMainWindow):
 
         self.act_del_sel = QAction("🗑️ " + t("T111"), self)
         self.act_del_sel.setShortcut(QKeySequence.Delete)
+        self.act_del_sel.setToolTip("Seçili veya İşaretli Kanalları Sil (Delete)")
         self.act_del_sel.triggered.connect(self.channel_table.smart_delete)
         self.menu_edit.addAction(self.act_del_sel)
 
         self.act_del_chk = QAction("❌ " + t("T112"), self)
+        self.act_del_chk.setToolTip("Tüm İşaretli Kanalları Sil")
         self.act_del_chk.triggered.connect(self.channel_table.delete_checked)
         self.menu_edit.addAction(self.act_del_chk)
 
@@ -144,16 +152,21 @@ class MainWindow(QMainWindow):
 
         self.act_toggle_check = QAction("☑️ Tümünü İşaretle", self)
         self.act_toggle_check.setShortcut(QKeySequence("Ctrl+A"))
+        self.act_toggle_check.setToolTip("Tüm Kanalları İşaretle / İşaretleri Kaldır (Ctrl+A)")
         self.act_toggle_check.triggered.connect(self.channel_table.toggle_all_checked)
         self.menu_edit.addAction(self.act_toggle_check)
 
         # 3. Tools Menu
         self.menu_tools = menu_bar.addMenu(t("T103"))  # Çoklu İşlemler
         self.act_compare = QAction("📊 " + t("T104"), self)  # Karşılaştırma
+        self.act_compare.setShortcut(QKeySequence("Ctrl+K"))
+        self.act_compare.setToolTip("İki SDX Dosyasını Karşılaştır (Ctrl+K)")
         self.act_compare.triggered.connect(self._open_compare_dialog)
         self.menu_tools.addAction(self.act_compare)
 
         self.act_import = QAction("📥 " + t("T105"), self)  # Farklı Dosyadan Kopyalama
+        self.act_import.setShortcut(QKeySequence("Ctrl+I"))
+        self.act_import.setToolTip("Farklı SDX Dosyasından Kanal Aktar (Ctrl+I)")
         self.act_import.triggered.connect(self._open_import_dialog)
         self.menu_tools.addAction(self.act_import)
 
@@ -161,6 +174,8 @@ class MainWindow(QMainWindow):
         self.menu_view = menu_bar.addMenu("Görünüm")
         self.act_toggle_sidebar = QAction("📑 " + t("T119"), self, checkable=True)
         self.act_toggle_sidebar.setChecked(True)
+        self.act_toggle_sidebar.setShortcut(QKeySequence("F4"))
+        self.act_toggle_sidebar.setToolTip("Sağ Detay Panelini Göster/Gizle (F4)")
         self.act_toggle_sidebar.toggled.connect(self.toggle_sidebar)
         self.menu_view.addAction(self.act_toggle_sidebar)
 
@@ -190,28 +205,39 @@ class MainWindow(QMainWindow):
         # 6. Help Menu
         self.menu_help = menu_bar.addMenu("Yardım")
         self.act_about = QAction("ℹ️ " + t("T106"), self)
+        self.act_about.setShortcut(QKeySequence("F1"))
+        self.act_about.setToolTip("SatSort Hakkında (F1)")
         self.act_about.triggered.connect(self.show_about)
         self.menu_help.addAction(self.act_about)
 
-        # Top Toolbar
+        # Top Toolbar (Grouped UX Layout)
         self.toolbar = QToolBar("Main Toolbar")
         self.toolbar.setIconSize(QSize(20, 20))
         self.toolbar.setMovable(False)
         self.addToolBar(self.toolbar)
 
+        # Group 1: File Operations
         self.toolbar.addAction(self.act_open)
         self.toolbar.addAction(self.act_save)
         self.toolbar.addAction(self.act_close_list)
         self.toolbar.addSeparator()
+
+        # Group 2: Movement
         self.toolbar.addAction(self.act_move_up)
         self.toolbar.addAction(self.act_move_down)
         self.toolbar.addSeparator()
+
+        # Group 3: Delete & Selection
         self.toolbar.addAction(self.act_del_sel)
         self.toolbar.addAction(self.act_toggle_check)
         self.toolbar.addSeparator()
+
+        # Group 4: Advanced Tools
         self.toolbar.addAction(self.act_compare)
         self.toolbar.addAction(self.act_import)
         self.toolbar.addSeparator()
+
+        # Group 5: View Controls
         self.toolbar.addAction(self.act_toggle_sidebar)
 
     def _rebuild_language_menu(self) -> None:
