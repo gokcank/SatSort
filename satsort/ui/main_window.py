@@ -295,7 +295,6 @@ class MainWindow(QMainWindow):
         self.channel_table.channel_selected.connect(self._on_channel_selected)
         self.channel_table.request_rename.connect(self._on_request_rename)
         self.channel_table.request_move.connect(self._on_request_move)
-        self.channel_table.request_swap.connect(self._on_request_swap)
         self.sidebar.transponder_channel_clicked.connect(self._on_transponder_channel_clicked)
         self.search_bar.text_changed.connect(self._on_search_text_changed)
         self.search_bar.search_confirmed.connect(self._on_search_confirmed)
@@ -337,27 +336,14 @@ class MainWindow(QMainWindow):
             if sel_indices:
                 current_row = sel_indices[0]
 
-        dlg = MoveToDialog(current_row + 1, total, is_checked, self)
+        dlg = MovePositionDialog(t("T113") if not is_checked else t("T114"), total, current_row + 1, self)
         if dlg.exec():
-            target_1based = dlg.get_target_row()
-            target_idx = target_1based - 1
+            target_idx = dlg.get_target_index()
 
             if is_checked:
                 self.channel_table.move_checked_channels(target_idx)
             else:
                 self.channel_table.move_channel(current_row, target_idx)
-            self._set_dirty(True)
-
-    def _on_request_swap(self, target_row: int) -> None:
-        channels = self.channel_table.get_channels()
-        if not channels or not (0 <= target_row < len(channels)):
-            return
-
-        current_channel = channels[target_row]
-        dlg = SwapDialog(target_row + 1, current_channel.channel_name, channels, self)
-        if dlg.exec():
-            source_idx, target_idx = dlg.get_swap_indices()
-            self.channel_table.swap_channels(source_idx, target_idx)
             self._set_dirty(True)
 
     def _open_import_dialog(self) -> None:

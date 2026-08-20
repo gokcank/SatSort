@@ -269,12 +269,13 @@ class TestComprehensiveSatSort(unittest.TestCase):
         channels = table.get_channels()
         self.assertEqual(channels[2].channel_name, "ATV HD")
 
-    def test_channel_swap(self):
+    def test_channel_move_single(self):
         table = self.win.channel_table
-        # Swap index 0 (TRT 1 HD) and index 2 (ATV HD)
-        table.swap_channels(0, 2)
+        # Move index 0 (TRT 1 HD) to index 2 (between TRT HABER HD and ATV HD)
+        table.move_channel(0, 2)
         channels = table.get_channels()
-        self.assertEqual(channels[0].channel_name, "ATV HD")
+        self.assertEqual(channels[0].channel_name, "TRT HABER HD")
+        self.assertEqual(channels[1].channel_name, "ATV HD")
         self.assertEqual(channels[2].channel_name, "TRT 1 HD")
 
     def test_move_multiple_channels(self):

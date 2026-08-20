@@ -31,7 +31,6 @@ class ChannelTableWidget(QTableWidget):
     channels_updated = Signal()        # Emits when channels list or order changes
     request_rename = Signal(int, object)  # (row_index, Channel)
     request_move = Signal(bool)          # True if checked, False if single selected
-    request_swap = Signal(int)           # source row
 
     COL_NO = 0
     COL_CHECK = 1
@@ -272,43 +271,6 @@ class ChannelTableWidget(QTableWidget):
                 item.setText(str(row + 1))
         self._is_updating = False
         self.channels_updated.emit()
-
-    def swap_channels(self, idx1: int, idx2: int) -> bool:
-        """Swaps two channels in-place efficiently."""
-        if not (0 <= idx1 < len(self._channels)) or not (0 <= idx2 < len(self._channels)):
-            return False
-        if idx1 == idx2:
-            return True
-
-        self._is_updating = True
-        self.setUpdatesEnabled(False)
-        self.blockSignals(True)
-
-        self._channels[idx1], self._channels[idx2] = self._channels[idx2], self._channels[idx1]
-
-        for col in range(self.columnCount()):
-            item1 = self.takeItem(idx1, col)
-            item2 = self.takeItem(idx2, col)
-            self.setItem(idx1, col, item2)
-            self.setItem(idx2, col, item1)
-
-        item_no1 = self.item(idx1, self.COL_NO)
-        if item_no1:
-            item_no1.setText(str(idx1 + 1))
-        item_no2 = self.item(idx2, self.COL_NO)
-        if item_no2:
-            item_no2.setText(str(idx2 + 1))
-
-        self._update_row_visual(idx1, self._channels[idx1].is_checked)
-        self._update_row_visual(idx2, self._channels[idx2].is_checked)
-
-        self.blockSignals(False)
-        self.setUpdatesEnabled(True)
-        self._is_updating = False
-
-        self.selectRow(idx2)
-        self.channels_updated.emit()
-        return True
 
     def move_channel(self, source_row: int, target_row: int) -> bool:
         """Moves a single channel from source index to target index efficiently in O(1) row ops."""
@@ -783,11 +745,6 @@ class ChannelTableWidget(QTableWidget):
             act_move_chk = QAction(f"{t('T114')} ({checked_count})", self)  # İşaretli Kanalları Taşı (X)
             act_move_chk.triggered.connect(lambda: QTimer.singleShot(0, lambda: self.request_move.emit(True)))
             menu.addAction(act_move_chk)
-
-        act_swap = QAction(t("T115"), self)  # Takas Et
-        act_swap.setEnabled(has_selection)
-        act_swap.triggered.connect(lambda checked=False, r=target_row: self.request_swap.emit(r))
-        menu.addAction(act_swap)
 
         menu.addSeparator()
 

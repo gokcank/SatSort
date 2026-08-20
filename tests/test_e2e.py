@@ -43,18 +43,13 @@ class TestSatSortE2E(unittest.TestCase):
         self.assertEqual(matching[2].channel_name, "KRAL FM")
         self.assertEqual(matching[3].channel_name, "DATA CH")
 
-    def test_channel_reordering_and_swapping(self):
+    def test_channel_reordering(self):
         clist = list(self.channels)
         # Move Ch 3 (ATV) from index 2 to index 0
         atv = clist.pop(2)
         clist.insert(0, atv)
         self.assertEqual(clist[0].channel_name, "ATV")
         self.assertEqual(clist[1].channel_name, "TRT 1 HD")
-
-        # Swap Ch 0 and Ch 1
-        clist[0], clist[1] = clist[1], clist[0]
-        self.assertEqual(clist[0].channel_name, "TRT 1 HD")
-        self.assertEqual(clist[1].channel_name, "ATV")
 
     def test_channel_rename_and_validation(self):
         valid, msg = validate_channel_name("HABERTURK HD")
