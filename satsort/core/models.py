@@ -107,7 +107,10 @@ class Channel:
     @property
     def is_encrypted(self) -> bool:
         """Checks if the channel has encryption flags set."""
-        return bool(self.crypto.strip() and self.crypto.strip() != "0" and self.crypto.strip() != "----")
+        crypto_clean = self.crypto.strip().upper()
+        if not crypto_clean or crypto_clean in {"0", "0000", "----", "FTA", "FREE"}:
+            return False
+        return True
 
     def clone(self) -> "Channel":
         """Creates a shallow copy of the channel object."""

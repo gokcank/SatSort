@@ -26,6 +26,12 @@ from PySide6.QtWidgets import (
 from ..core.models import Channel
 from ..core.parser import read_sdx_file, write_sdx_file, validate_channel_name
 from ..core.config import config
+from ..core.batch_tools import (
+    move_radios_to_end,
+    remove_scrambled_channels,
+    normalize_channel_names,
+    remove_duplicate_channels,
+)
 from ..i18n import i18n, t
 from .theme import toggle_theme, get_current_theme
 from .channel_table import ChannelTableWidget
@@ -216,6 +222,25 @@ class MainWindow(QMainWindow):
         self.act_import.setToolTip(f"{t('T105')} (Ctrl+I)")
         self.act_import.triggered.connect(self._open_import_dialog)
         self.menu_tools.addAction(self.act_import)
+
+        self.menu_tools.addSeparator()
+
+        is_tr = i18n.current_language == "Türkçe"
+        self.act_move_radios_end = QAction("📻 " + ("Radyoları Listenin Sonuna Taşı" if is_tr else "Move Radios to End"), self)
+        self.act_move_radios_end.triggered.connect(self._batch_move_radios_to_end)
+        self.menu_tools.addAction(self.act_move_radios_end)
+
+        self.act_remove_scrambled = QAction("🔒 " + ("Şifreli Kanalları Sil..." if is_tr else "Remove Scrambled Channels..."), self)
+        self.act_remove_scrambled.triggered.connect(self._batch_remove_scrambled)
+        self.menu_tools.addAction(self.act_remove_scrambled)
+
+        self.act_normalize_names = QAction("🔤 " + ("Kanal İsimlerini Standartlaştır" if is_tr else "Normalize Channel Names"), self)
+        self.act_normalize_names.triggered.connect(self._batch_normalize_names)
+        self.menu_tools.addAction(self.act_normalize_names)
+
+        self.act_remove_duplicates = QAction("🔍 " + ("Çift / Mükerrer Kanalları Temizle..." if is_tr else "Remove Duplicate Channels..."), self)
+        self.act_remove_duplicates.triggered.connect(self._batch_remove_duplicates)
+        self.menu_tools.addAction(self.act_remove_duplicates)
 
         # 4. Settings Menu
         self.menu_settings = menu_bar.addMenu("Ayarlar" if i18n.current_language == "Türkçe" else "Settings")
@@ -422,6 +447,107 @@ class MainWindow(QMainWindow):
         ]
         self.channel_table.set_channels(remaining)
         self._set_dirty(True)
+
+    def _batch_move_radios_to_end(self) -> None:
+        channels = self.channel_table.get_channels()
+        if not channels:
+            QMessageBox.warning(self, "SatSort", t("T145"))
+            return
+
+        is_tr = i18n.current_language == "Türkçe"
+        radio_count = sum(1 for c in channels if c.channel_type == "R")
+        if radio_count == 0:
+            QMessageBox.information(self, "SatSort", "Listede radyo kanalı bulunamadı." if is_tr else "No radio channels found in list.")
+            return
+
+        res = QMessageBox.question(
+            self,
+            "SatSort",
+            f"Listede <b>{radio_count}</b> adet radyo kanalı bulundu.<br>Tüm radyolar listenin en sonuna taşınsın mı?" if is_tr
+            else f"Found <b>{radio_count}</b> radio channels.<br>Move all radios to the end of the list?",
+            QMessageBox.Yes | QMessageBox.No,
+            QMessageBox.Yes,
+        )
+        if res == QMessageBox.Yes:
+            new_channels, moved = move_radios_to_end(channels)
+            self.channel_table.set_channels(new_channels)
+            self._set_dirty(True)
+            self.status_bar.showMessage(f"{moved} radyo kanalı listenin sonuna taşındı." if is_tr else f"{moved} radio channels moved to end.", 4000)
+
+    def _batch_remove_scrambled(self) -> None:
+        channels = self.channel_table.get_channels()
+        if not channels:
+            QMessageBox.warning(self, "SatSort", t("T145"))
+            return
+
+        is_tr = i18n.current_language == "Türkçe"
+        filtered, removed = remove_scrambled_channels(channels)
+        if removed == 0:
+            QMessageBox.information(self, "SatSort", "Listede şifreli kanal bulunamadı (Tümü şifresiz/FTA)." if is_tr else "No scrambled channels found in list.")
+            return
+
+        res = QMessageBox.question(
+            self,
+            "SatSort",
+            f"Listede <b>{removed}</b> adet şifreli/kriptolu kanal bulundu.<br>Bu kanalların tümü listeden silinsin mi?" if is_tr
+            else f"Found <b>{removed}</b> scrambled channels.<br>Remove all scrambled channels from list?",
+            QMessageBox.Yes | QMessageBox.No,
+            QMessageBox.No,
+        )
+        if res == QMessageBox.Yes:
+            self.channel_table.set_channels(filtered)
+            self._set_dirty(True)
+            self.status_bar.showMessage(f"{removed} şifreli kanal temizlendi." if is_tr else f"{removed} scrambled channels removed.", 4000)
+
+    def _batch_normalize_names(self) -> None:
+        channels = self.channel_table.get_channels()
+        if not channels:
+            QMessageBox.warning(self, "SatSort", t("T145"))
+            return
+
+        is_tr = i18n.current_language == "Türkçe"
+        normalized, changed = normalize_channel_names(channels)
+        if changed == 0:
+            QMessageBox.information(self, "SatSort", "Tüm kanal isimleri zaten standart biçimde." if is_tr else "All channel names are already normalized.")
+            return
+
+        res = QMessageBox.question(
+            self,
+            "SatSort",
+            f"<b>{changed}</b> kanalın isminde biçimlendirme / boşluk düzeltmesi tespit edildi.<br>İsimler büyük harf ve standart boşluklarla güncellensin mi?" if is_tr
+            else f"Detected formatting/whitespace updates for <b>{changed}</b> channels.<br>Normalize channel names to uppercase standard?",
+            QMessageBox.Yes | QMessageBox.No,
+            QMessageBox.Yes,
+        )
+        if res == QMessageBox.Yes:
+            self.channel_table.set_channels(normalized)
+            self._set_dirty(True)
+            self.status_bar.showMessage(f"{changed} kanal ismi güncellendi." if is_tr else f"{changed} channel names normalized.", 4000)
+
+    def _batch_remove_duplicates(self) -> None:
+        channels = self.channel_table.get_channels()
+        if not channels:
+            QMessageBox.warning(self, "SatSort", t("T145"))
+            return
+
+        is_tr = i18n.current_language == "Türkçe"
+        deduped, dup_count = remove_duplicate_channels(channels)
+        if dup_count == 0:
+            QMessageBox.information(self, "SatSort", "Listede çift / mükerrer kanal bulunamadı." if is_tr else "No duplicate channels found in list.")
+            return
+
+        res = QMessageBox.question(
+            self,
+            "SatSort",
+            f"Listede <b>{dup_count}</b> adet mükerrer (çift) kanal bulundu.<br>İlk kopyalar korunarak fazlalıklar silinsin mi?" if is_tr
+            else f"Found <b>{dup_count}</b> duplicate channels.<br>Remove duplicate entries while keeping the first occurrence?",
+            QMessageBox.Yes | QMessageBox.No,
+            QMessageBox.Yes,
+        )
+        if res == QMessageBox.Yes:
+            self.channel_table.set_channels(deduped)
+            self._set_dirty(True)
+            self.status_bar.showMessage(f"{dup_count} mükerrer kanal silindi." if is_tr else f"{dup_count} duplicate channels removed.", 4000)
 
     def _on_apply_additions(self, channels_to_add: List[Channel]) -> None:
         if not channels_to_add:
@@ -756,6 +882,12 @@ class MainWindow(QMainWindow):
 
         self.act_import.setText(t("T105"))
         self.act_import.setToolTip(f"{t('T105')} (Ctrl+I)")
+
+        is_tr = i18n.current_language == "Türkçe"
+        self.act_move_radios_end.setText("📻 " + ("Radyoları Listenin Sonuna Taşı" if is_tr else "Move Radios to End"))
+        self.act_remove_scrambled.setText("🔒 " + ("Şifreli Kanalları Sil..." if is_tr else "Remove Scrambled Channels..."))
+        self.act_normalize_names.setText("🔤 " + ("Kanal İsimlerini Standartlaştır" if is_tr else "Normalize Channel Names"))
+        self.act_remove_duplicates.setText("🔍 " + ("Çift / Mükerrer Kanalları Temizle..." if is_tr else "Remove Duplicate Channels..."))
 
         self.act_toggle_sidebar.setText(t("T119"))
         self.act_toggle_sidebar.setToolTip(f"{t('T119')} (F4)")
