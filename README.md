@@ -1,65 +1,124 @@
 # 🛰️ SatSort
 
-**SatSort**, uydu alıcıları için standart **SatcoDX (`.sdx`)** formatındaki kanal listelerini Linux üzerinde hızlı, görsel ve modern bir arayüzle düzenleme, sıralama, arama ve senkronize etme aracıdır.
+[![SatSort CI](https://github.com/gokcank/SatSort/actions/workflows/ci.yml/badge.svg)](https://github.com/gokcank/SatSort/actions/workflows/ci.yml)
+[![GitHub release](https://img.shields.io/github/v/release/gokcank/SatSort?color=38bdf8)](https://github.com/gokcank/SatSort/releases)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Python: >=3.8](https://img.shields.io/badge/Python->=3.8-blue.svg)](https://www.python.org/)
+[![GUI: Qt6 / PySide6](https://img.shields.io/badge/GUI-Qt6%20%2F%20PySide6-green.svg)](https://wiki.qt.io/Qt_for_Python)
+
+**SatSort**, uydu alıcıları ve akıllı televizyonlar (Vestel, Toshiba, Regal, Hi-Level, Telefunken, JVC, Finlux, Techwood vb.) için standart **SatcoDX (`.sdx`)** formatındaki kanal listelerini Linux üzerinde modern, hızlı ve görsel bir arayüzle düzenleme, sıralama, arama, temizleme ve dışa aktarma aracıdır.
 
 ---
 
-## ✨ Özellikler
+## ✨ Temel Özellikler
 
-* **🖱️ Sürükle-Bırak (Drag & Drop) Sıralama:** Fareyle kanalların sırasını tek tek veya topluca kolayca değiştirin.
-* **🔍 Canlı Arama ve Hızlı Seçim:** Anlık kanal arama, eşleşen kanal sayacı ve `Enter` ile bulunan kanalları otomatik işaretleme.
-* **📑 Teknik Detay & Transponder Paneli:** Seçilen kanalın tüm frekans, polarizasyon, sembol oranı, FEC ve PID (VPID, APID, PCRP, SID, NID, TSID) parametrelerini inceleyin ve aynı paketteki diğer kanalları listeleyin.
-* **📊 İki Dosyayı Karşılaştırma:** Farklı iki `.sdx` dosyasını karşılaştırıp **Silinen Kanallar** ve **Yeni Eklenen Kanallar** listesini çıkarın, tek tıkla senkronize edin.
-* **📥 Başka Dosyadan Kanal Kopyalama:** İkinci bir `.sdx` dosyasını açıp aradığınız kanalları seçerek mevcut listenize aktarın.
-* **🌐 Çoklu Dil Desteği:** Türkçe, English, Deutsch, Français ve Español dilleri arasında anında geçiş yapın.
-* **🎨 Modern Linux Karanlık Tema:** Göz yormayan, modern masaüstü tasarımına uygun şık karanlık arayüz.
-* **🔒 Standart Uyumluluğu:** Orijinal `.sdx` sabit genişlikli sütun yapısını ve dosya sonu null (`\0`) bayt kurallarını %100 korur.
+* **🖱️ Sürükle-Bırak & Araya Ekle/Kaydır (Insert & Shift):** Kanalları fareyle taşıyın veya klavyeden (`Alt+Up/Down`) sıra kayması riski olmadan araya ekleyip diğer kanalları aşağı kaydırın.
+* **🎯 Numaraya Taşı (`Ctrl+M`):** Kanal numarasını girerek kanalı anında istediğiniz sıraya taşıyın.
+* **🔗 Referans Liste ile Sıralama:** Eski/düzenli bir `.sdx` dosyasını referans seçerek, TV'den yeni taranmış yüzlerce kanalı tek tıkla eski sıralamanıza otomatik dizin.
+* **🧹 Akıllı Toplu Temizlik Araçları:**
+  * 📻 **Radyoları Listenin Sonuna Taşı**
+  * 🔒 **Şifreli Kanalları Sil**
+  * 🔤 **Kanal İsimlerini Standartlaştır (Büyük Harf & Fazlalık Boşluk Temizliği)**
+  * 🔍 **Çift / Mükerrer Kanalları Ayıkla**
+* **📤 Çoklu Format Dışa Aktarma (Export):**
+  * `📄 CSV (.csv)`: Excel ve LibreOffice Calc uyumlu döküm.
+  * `📝 TXT (.txt)`: Hizalanmış, yazdırılabilir metin tablosu.
+  * `📺 M3U (.m3u)`: VLC Player ve TVheadend için DVB-S URI destekli oynatma listesi.
+* **🔍 Canlı Arama & Hızlı Seçim:** Anlık kanal arama, eşleşen kanal sayacı ve `Enter` ile bulunan kanalları otomatik işaretleme.
+* **📊 İki Dosyayı Karşılaştırma (`Ctrl+K`):** İki `.sdx` listesini karşılaştırıp silinen ve yeni eklenen kanalları anında tespit edin.
+* **📥 Başka Dosyadan Kanal Kopyalama (`Ctrl+I`):** İkinci bir dosyadan aradığınız kanalları seçip mevcut listenize aktarın.
+* **🛡️ Emniyet Mekanizmaları:** Otomatik `.sdx.bak` yedekleme ve SatcoDX 105 standartlarına %100 bayt uyumluluğu.
+* **🌐 Çoklu Dil:** Türkçe, English, Deutsch, Français, Español.
+* **🎨 Modern Arayüz:** Karanlık ve Açık tema desteği.
 
 ---
 
-## 🚀 Kurulum ve Çalıştırma
+## 📦 İndirme ve Kurulum
 
-### Gereksinimler
-* Python 3.8 veya üzeri
-* PySide6 (Qt6)
+GitHub Releases sayfasından sisteminize uygun paketi indirin:
 
-### Kurulum Adımları
+### 🌟 1. Evrensel Linux Paketi: AppImage (Önerilen)
+Hiçbir kurulum veya ek kütüphane gerektirmez. Ubuntu, Debian, Fedora, Arch, Manjaro, Linux Mint vb. tüm dağıtımlarda çalışır:
+```bash
+# Çalıştırma izni verip doğrudan açın
+chmod +x SatSort-1.0.0-x86_64.AppImage
+./SatSort-1.0.0-x86_64.AppImage
+```
+
+### 🐧 2. Debian / Ubuntu Kurulum Paketi (`.deb`)
+Sisteme ve uygulama menüsüne entegre kurmak için:
+```bash
+sudo dpkg -i satsort_1.0.0_amd64.deb
+```
+
+### ⚡ 3. Taşınabilir Tek Dosya Binary
+```bash
+chmod +x satsort-linux-x86_64
+./satsort-linux-x86_64
+```
+
+---
+
+## 🛠️ Kaynak Koddan Çalıştırma
+
 ```bash
 # Depoyu klonlayın
-git clone <repo-url>
+git clone https://github.com/gokcank/SatSort.git
 cd SatSort
 
-# Sanal ortam oluşturun (isteğe bağlı)
+# Sanal ortam oluşturun ve bağımlılıkları yükleyin
 python3 -m venv .venv
 source .venv/bin/activate
-
-# Bağımlılıkları yükleyin
 pip install -r requirements.txt
-```
 
-### Uygulamayı Başlatma
-```bash
-# Ana uygulamayı başlatın
+# Uygulamayı başlatın
 python3 main.py
 
-# Doğrudan bir .sdx dosyası açarak başlatmak için:
+# Doğrudan bir kanal dosyasıyla başlatmak için:
 python3 main.py /path/to/kanallar.sdx
 ```
+
+### Masaüstü Entegrasyonu:
+Sistem menüsüne ve `.sdx` dosya çift tıklama ilişkilendirmesine kurmak için:
+```bash
+./install_desktop.sh
+```
+
+---
+
+## ⌨️ Klavye Kısayolları
+
+| Kısayol | İşlev |
+| :--- | :--- |
+| `Ctrl + O` | Dosya Aç (`.sdx`) |
+| `Ctrl + S` | Değişiklikleri Kaydet |
+| `Ctrl + M` | Kanalı Numaraya Taşı (Araya Ekle & Kaydır) |
+| `Alt + Up / Down` | Seçili Kanalı 1 Sıra Yukarı/Aşağı Taşı |
+| `F2` | Kanalı Yeniden Adlandır |
+| `Space` | Kanal İşaretini Aç/Kapat (Checkbox) |
+| `Delete` | Seçili / İşaretli Kanalları Sil |
+| `Ctrl + A` | Tüm Kanalları İşaretle |
+| `Ctrl + F` | Arama Çubuğuna Odaklan |
+| `F4` | Sağ Bilgi Panelini Aç/Kapat |
+| `Ctrl + K` | İki Listeyi Karşılaştır |
+| `Ctrl + I` | Farklı Dosyadan Kanal İçe Aktar |
+| `Ctrl + /` | Klavye Kısayolları Kılavuzu |
+| `F1` | SatSort Hakkında |
 
 ---
 
 ## 🧪 Testleri Çalıştırma
 
-Tüm birim ve entegrasyon testlerini çalıştırmak için:
+Tüm test paketini çalıştırmak için:
 ```bash
 python3 -m unittest discover tests
 ```
 
 ---
 
-## 📜 Lisans & Esinlenme
+## 📜 Lisans & Teşekkür
 
 Bu proje [MIT Lisansı](LICENSE) altında açık kaynak olarak dağıtılmaktadır.
 
-> **Atıf ve Teşekkür:**  
-> Bu proje, **Mehmet Taşköprü** tarafından geliştirilen açık kaynaklı [NovaSatcoDX](https://sourceforge.net/projects/novasatcodx/) Windows projesinden esinlenilerek, Linux platformu için sıfırdan modern Python & Qt6 (PySide6) mimarisiyle yeniden geliştirilmiştir.
+* **Geliştirici:** [Gökcan](https://github.com/gokcank)
+* **Atıf ve Esinlenme:** Bu proje, **Mehmet Taşköprü** tarafından geliştirilen açık kaynaklı [NovaSatcoDX](https://sourceforge.net/projects/novasatcodx/) projesinden esinlenilerek, Linux platformu için sıfırdan modern Python & Qt6 mimarisiyle geliştirilmiştir.
