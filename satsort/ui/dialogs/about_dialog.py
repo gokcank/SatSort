@@ -3,7 +3,8 @@ SatSort - About Application Dialog
 """
 
 from __future__ import annotations
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QUrl
+from PySide6.QtGui import QDesktopServices
 from PySide6.QtWidgets import (
     QDialog,
     QVBoxLayout,
@@ -13,22 +14,22 @@ from PySide6.QtWidgets import (
     QFrame,
 )
 
-from ...i18n import t
+from ...i18n import t, i18n
 
 
 class AboutDialog(QDialog):
-    """Dialog displaying application information, credits, and open source license details."""
+    """Dialog displaying application information, credits, developer links, and report buttons."""
 
     def __init__(self, parent=None) -> None:
         super().__init__(parent)
         self.setWindowTitle(t("T106"))  # Hakkında / About
-        self.setFixedSize(450, 320)
+        self.setFixedSize(480, 360)
         self._setup_ui()
 
     def _setup_ui(self) -> None:
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(24, 24, 24, 20)
-        layout.setSpacing(14)
+        layout.setContentsMargins(24, 22, 24, 20)
+        layout.setSpacing(12)
 
         # Header Badge
         header_layout = QHBoxLayout()
@@ -55,26 +56,44 @@ class AboutDialog(QDialog):
         line.setStyleSheet("color: #334155;")
         layout.addWidget(line)
 
-        # Description text
+        # Description text with clickable developer and repo links
+        is_tr = i18n.current_language == "Türkçe"
         desc_lbl = QLabel(
-            "SatSort, uydu alıcıları için <b>SatcoDX (.sdx)</b> formatındaki kanal "
-            "listelerini Linux üzerinde yerel, hızlı ve modern bir arayüzle düzenleme, "
-            "sıralama, filtreleme ve karşılaştırma aracıdır.<br><br>"
-            "<b>Esinlenme & Teşekkür:</b><br>"
-            "Bu proje, <b>Mehmet Taşköprü</b> tarafından geliştirilen açık kaynaklı "
-            "<i>NovaSatcoDX</i> projesinden esinlenilerek Linux için sıfırdan "
-            "Python & Qt6 (PySide6) ile geliştirilmiştir."
+            f"SatSort, uydu alıcıları için <b>SatcoDX (.sdx)</b> formatındaki kanal "
+            f"listelerini Linux üzerinde yerel, hızlı ve modern bir arayüzle düzenleme, "
+            f"sıralama ve karşılaştırma aracıdır.<br><br>"
+            f"<b>{'Geliştirici' if is_tr else 'Developer'}:</b> "
+            f"<a href='https://github.com/gokcank' style='color: #38bdf8; text-decoration: none;'><b>Gökcan</b> (github.com/gokcank)</a><br>"
+            f"<b>{'Kaynak Kodu' if is_tr else 'Source Code'}:</b> "
+            f"<a href='https://github.com/gokcank/SatSort' style='color: #38bdf8; text-decoration: none;'>github.com/gokcank/SatSort</a><br><br>"
+            f"<b>{'Esinlenme & Teşekkür' if is_tr else 'Credits & Thanks'}:</b><br>"
+            f"Mehmet Taşköprü (<i>NovaSatcoDX</i>)."
         )
         desc_lbl.setWordWrap(True)
+        desc_lbl.setOpenExternalLinks(True)
         desc_lbl.setStyleSheet("color: #cbd5e1; font-size: 12px; line-height: 1.4;")
         layout.addWidget(desc_lbl)
 
         layout.addStretch()
 
-        # Close Button
+        # Action Buttons Layout (GitHub + Report Bug + Close)
         btn_layout = QHBoxLayout()
+        btn_layout.setSpacing(10)
+
+        btn_github = QPushButton("⭐ GitHub" if not is_tr else "⭐ GitHub Deposu")
+        btn_github.setToolTip("https://github.com/gokcank/SatSort")
+        btn_github.clicked.connect(lambda: QDesktopServices.openUrl(QUrl("https://github.com/gokcank/SatSort")))
+        btn_layout.addWidget(btn_github)
+
+        btn_issue = QPushButton("🐛 Report Bug" if not is_tr else "🐛 Hata Bildir")
+        btn_issue.setToolTip("https://github.com/gokcank/SatSort/issues/new")
+        btn_issue.clicked.connect(lambda: QDesktopServices.openUrl(QUrl("https://github.com/gokcank/SatSort/issues/new")))
+        btn_layout.addWidget(btn_issue)
+
         btn_layout.addStretch()
+
         btn_close = QPushButton(t("T107"))  # Kapat
         btn_close.clicked.connect(self.accept)
         btn_layout.addWidget(btn_close)
+
         layout.addLayout(btn_layout)

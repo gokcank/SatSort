@@ -205,45 +205,59 @@ class MainWindow(QMainWindow):
         self.act_import.triggered.connect(self._open_import_dialog)
         self.menu_tools.addAction(self.act_import)
 
-        # 4. View Menu
-        self.menu_view = menu_bar.addMenu("Görünüm")
-        self.act_toggle_sidebar = QAction(_create_material_icon("info", "#3b82f6"), "Bilgi Paneli" if i18n.current_language == "Türkçe" else "Info Panel", self, checkable=True)
-        self.act_toggle_sidebar.setChecked(True)
-        self.act_toggle_sidebar.setShortcut(QKeySequence("F4"))
-        self.act_toggle_sidebar.setToolTip(f"{t('T119')} (F4)")
-        self.act_toggle_sidebar.toggled.connect(self.toggle_sidebar)
-        self.menu_view.addAction(self.act_toggle_sidebar)
+        # 4. Settings Menu
+        self.menu_settings = menu_bar.addMenu("Ayarlar" if i18n.current_language == "Türkçe" else "Settings")
 
         # Theme Submenu
-        self.menu_theme = self.menu_view.addMenu("🎨 Tema")
+        self.menu_theme = self.menu_settings.addMenu("🎨 Tema" if i18n.current_language == "Türkçe" else "🎨 Theme")
         self.theme_action_group = QActionGroup(self)
         self.theme_action_group.setExclusive(True)
 
         current_theme = get_current_theme()
 
-        self.act_dark_theme = QAction("🌙 Koyu Tema", self, checkable=True)
+        self.act_dark_theme = QAction("🌙 Koyu Tema" if i18n.current_language == "Türkçe" else "🌙 Dark Theme", self, checkable=True)
         self.act_dark_theme.setChecked(current_theme == "dark")
         self.act_dark_theme.triggered.connect(lambda: self._set_theme("dark"))
         self.theme_action_group.addAction(self.act_dark_theme)
         self.menu_theme.addAction(self.act_dark_theme)
 
-        self.act_light_theme = QAction("☀️ Açık Tema", self, checkable=True)
+        self.act_light_theme = QAction("☀️ Açık Tema" if i18n.current_language == "Türkçe" else "☀️ Light Theme", self, checkable=True)
         self.act_light_theme.setChecked(current_theme == "light")
         self.act_light_theme.triggered.connect(lambda: self._set_theme("light"))
         self.theme_action_group.addAction(self.act_light_theme)
         self.menu_theme.addAction(self.act_light_theme)
 
-        # 5. Language Menu
-        self.menu_lang = menu_bar.addMenu("🌐 " + t("T168"))
+        # Language Submenu
+        self.menu_lang = self.menu_settings.addMenu("🌐 " + ("Dil" if i18n.current_language == "Türkçe" else "Language"))
         self._rebuild_language_menu()
 
-        # 6. Help Menu
-        self.menu_help = menu_bar.addMenu("Yardım")
+        self.menu_settings.addSeparator()
+
+        # Sidebar Toggle
+        self.act_toggle_sidebar = QAction(_create_material_icon("info", "#3b82f6"), "Bilgi Paneli" if i18n.current_language == "Türkçe" else "Info Panel", self, checkable=True)
+        self.act_toggle_sidebar.setChecked(True)
+        self.act_toggle_sidebar.setShortcut(QKeySequence("F4"))
+        self.act_toggle_sidebar.setToolTip(f"{t('T119')} (F4)")
+        self.act_toggle_sidebar.toggled.connect(self.toggle_sidebar)
+        self.menu_settings.addAction(self.act_toggle_sidebar)
+
+        # 5. Help Menu
+        self.menu_help = menu_bar.addMenu("Yardım" if i18n.current_language == "Türkçe" else "Help")
         self.act_about = QAction(_create_material_icon("help_outline", "#38bdf8"), "ℹ️ " + t("T106"), self)
         self.act_about.setShortcut(QKeySequence("F1"))
-        self.act_about.setToolTip("SatSort Hakkında (F1)")
+        self.act_about.setToolTip(f"{t('T106')} (F1)")
         self.act_about.triggered.connect(self.show_about)
         self.menu_help.addAction(self.act_about)
+
+        self.menu_help.addSeparator()
+
+        self.act_report_issue = QAction("🐛 " + ("Hata Bildir / Geri Bildirim" if i18n.current_language == "Türkçe" else "Report Issue / Feedback"), self)
+        self.act_report_issue.triggered.connect(lambda: QDesktopServices.openUrl(QUrl("https://github.com/gokcank/SatSort/issues/new")))
+        self.menu_help.addAction(self.act_report_issue)
+
+        self.act_github_repo = QAction("⭐ " + ("GitHub Deposu" if i18n.current_language == "Türkçe" else "GitHub Repository"), self)
+        self.act_github_repo.triggered.connect(lambda: QDesktopServices.openUrl(QUrl("https://github.com/gokcank/SatSort")))
+        self.menu_help.addAction(self.act_github_repo)
 
         # Top Toolbar (Modern Stitch Vertical Icon-Above-Text Layout)
         self.toolbar = QToolBar("Main Toolbar")
@@ -609,9 +623,14 @@ class MainWindow(QMainWindow):
         self.menu_file.setTitle(t("T100"))
         self.menu_edit.setTitle("Düzenle" if i18n.current_language == "Türkçe" else ("Edit" if i18n.current_language == "English" else ("Bearbeiten" if i18n.current_language == "Deutsch" else "Éditer")))
         self.menu_tools.setTitle(t("T103"))
-        self.menu_view.setTitle("Görünüm" if i18n.current_language == "Türkçe" else ("View" if i18n.current_language == "English" else ("Ansicht" if i18n.current_language == "Deutsch" else "Affichage")))
-        self.menu_lang.setTitle("🌐 " + t("T168"))
+        self.menu_settings.setTitle("Ayarlar" if i18n.current_language == "Türkçe" else ("Settings" if i18n.current_language == "English" else ("Einstellungen" if i18n.current_language == "Deutsch" else "Paramètres")))
+        self.menu_theme.setTitle("🎨 " + ("Tema" if i18n.current_language == "Türkçe" else ("Theme" if i18n.current_language == "English" else "Theme")))
+        self.menu_lang.setTitle("🌐 " + ("Dil" if i18n.current_language == "Türkçe" else ("Language" if i18n.current_language == "English" else "Sprache")))
         self.menu_help.setTitle("Yardım" if i18n.current_language == "Türkçe" else ("Help" if i18n.current_language == "English" else ("Hilfe" if i18n.current_language == "Deutsch" else "Aide")))
+
+        # Theme actions
+        self.act_dark_theme.setText("🌙 " + ("Koyu Tema" if i18n.current_language == "Türkçe" else "Dark Theme"))
+        self.act_light_theme.setText("☀️ " + ("Açık Tema" if i18n.current_language == "Türkçe" else "Light Theme"))
 
         # File actions
         self.act_open.setText(t("T101"))
@@ -650,6 +669,9 @@ class MainWindow(QMainWindow):
 
         self.act_about.setText(t("T106"))
         self.act_about.setToolTip(f"{t('T106')} (F1)")
+
+        self.act_report_issue.setText("🐛 " + ("Hata Bildir / Geri Bildirim" if i18n.current_language == "Türkçe" else "Report Issue / Feedback"))
+        self.act_github_repo.setText("⭐ " + ("GitHub Deposu" if i18n.current_language == "Türkçe" else "GitHub Repository"))
 
         # Subcomponents
         self._rebuild_language_menu()
