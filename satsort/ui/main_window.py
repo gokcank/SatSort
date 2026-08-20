@@ -4,6 +4,7 @@ SatSort - Main Window UI
 
 from __future__ import annotations
 import os
+import shutil
 from typing import List, Optional
 
 from PySide6.QtCore import Qt, QSize, QByteArray
@@ -237,6 +238,12 @@ class MainWindow(QMainWindow):
         self._rebuild_language_menu()
 
         self.menu_settings.addSeparator()
+
+        # Auto-Backup Toggle
+        self.act_toggle_auto_backup = QAction("☑️ " + ("Otomatik Yedek Oluştur (.bak)" if i18n.current_language == "Türkçe" else "Create Automatic Backup (.bak)"), self, checkable=True)
+        self.act_toggle_auto_backup.setChecked(config.get_auto_backup())
+        self.act_toggle_auto_backup.toggled.connect(self._on_toggle_auto_backup)
+        self.menu_settings.addAction(self.act_toggle_auto_backup)
 
         # Sidebar Toggle
         self.act_toggle_sidebar = QAction(_create_material_icon("info", "#3b82f6"), "Bilgi Paneli" if i18n.current_language == "Türkçe" else "Info Panel", self, checkable=True)
@@ -590,6 +597,10 @@ class MainWindow(QMainWindow):
         config.clear_recent_files()
         self._update_recent_files_menu()
 
+    def _on_toggle_auto_backup(self, checked: bool) -> None:
+        """Saves auto-backup preference to persistent configuration."""
+        config.set_auto_backup(checked)
+
     def open_file(self) -> bool:
         if not self._maybe_save_changes():
             return False
@@ -621,6 +632,14 @@ class MainWindow(QMainWindow):
             return False
 
         try:
+            # Create automatic safety backup (.bak) if file already exists and auto-backup is enabled
+            if os.path.exists(file_path) and config.get_auto_backup():
+                bak_path = f"{file_path}.bak"
+                try:
+                    shutil.copy2(file_path, bak_path)
+                except Exception:
+                    pass
+
             write_sdx_file(file_path, channels)
             self._current_file_path = file_path
             self._set_dirty(False)
@@ -689,6 +708,7 @@ class MainWindow(QMainWindow):
         # Theme actions
         self.act_dark_theme.setText("🌙 " + ("Koyu Tema" if i18n.current_language == "Türkçe" else "Dark Theme"))
         self.act_light_theme.setText("☀️ " + ("Açık Tema" if i18n.current_language == "Türkçe" else "Light Theme"))
+        self.act_toggle_auto_backup.setText("☑️ " + ("Otomatik Yedek Oluştur (.bak)" if i18n.current_language == "Türkçe" else "Create Automatic Backup (.bak)"))
 
         # File actions
         self.act_open.setText(t("T101"))
