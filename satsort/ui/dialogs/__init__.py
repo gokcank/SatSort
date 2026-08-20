@@ -5,6 +5,7 @@ from .compare_dialog import CompareFilesDialog
 from .language_dialog import LanguageSelectionDialog
 from .about_dialog import AboutDialog
 from .reference_sort_dialog import ReferenceSortDialog
+from .shortcuts_dialog import ShortcutsDialog
 
 __all__ = [
     "MovePositionDialog",
@@ -14,4 +15,5 @@ __all__ = [
     "LanguageSelectionDialog",
     "AboutDialog",
     "ReferenceSortDialog",
+    "ShortcutsDialog",
 ]

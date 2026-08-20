@@ -46,6 +46,7 @@ from .dialogs import (
     LanguageSelectionDialog,
     AboutDialog,
     ReferenceSortDialog,
+    ShortcutsDialog,
 )
 
 MATERIAL_SVGS = {
@@ -314,6 +315,12 @@ class MainWindow(QMainWindow):
         self.act_about.setToolTip(f"{t('T106')} (F1)")
         self.act_about.triggered.connect(self.show_about)
         self.menu_help.addAction(self.act_about)
+
+        self.act_shortcuts = QAction("⌨️ " + ("Klavye Kısayolları" if i18n.current_language == "Türkçe" else "Keyboard Shortcuts"), self)
+        self.act_shortcuts.setShortcut(QKeySequence("Ctrl+/"))
+        self.act_shortcuts.setToolTip("⌨️ " + ("Klavye Kısayolları (Ctrl+/)" if i18n.current_language == "Türkçe" else "Keyboard Shortcuts (Ctrl+/)"))
+        self.act_shortcuts.triggered.connect(self._open_shortcuts_dialog)
+        self.menu_help.addAction(self.act_shortcuts)
 
         self.menu_help.addSeparator()
 
@@ -927,6 +934,9 @@ class MainWindow(QMainWindow):
     def show_about(self) -> None:
         AboutDialog(self).exec()
 
+    def _open_shortcuts_dialog(self) -> None:
+        ShortcutsDialog(self).exec()
+
     def retranslate_ui(self) -> None:
         """Dynamically retranslates all menus, actions, tooltips, tables and subcomponents."""
         self._update_window_title()
@@ -988,7 +998,6 @@ class MainWindow(QMainWindow):
         self.act_import.setText(t("T105"))
         self.act_import.setToolTip(f"{t('T105')} (Ctrl+I)")
 
-        is_tr = i18n.current_language == "Türkçe"
         self.act_move_radios_end.setText("📻 " + ("Radyoları Listenin Sonuna Taşı" if is_tr else "Move Radios to End"))
         self.act_remove_scrambled.setText("🔒 " + ("Şifreli Kanalları Sil..." if is_tr else "Remove Scrambled Channels..."))
         self.act_normalize_names.setText("🔤 " + ("Kanal İsimlerini Standartlaştır" if is_tr else "Normalize Channel Names"))
@@ -998,8 +1007,11 @@ class MainWindow(QMainWindow):
         self.act_toggle_sidebar.setText(t("T119"))
         self.act_toggle_sidebar.setToolTip(f"{t('T119')} (F4)")
 
-        self.act_about.setText(t("T106"))
+        self.act_about.setText("ℹ️ " + t("T106"))
         self.act_about.setToolTip(f"{t('T106')} (F1)")
+
+        self.act_shortcuts.setText("⌨️ " + ("Klavye Kısayolları" if is_tr else "Keyboard Shortcuts"))
+        self.act_shortcuts.setToolTip("⌨️ " + ("Klavye Kısayolları (Ctrl+/)" if is_tr else "Keyboard Shortcuts (Ctrl+/)"))
 
         self.act_report_issue.setText("🐛 " + ("Hata Bildir / Geri Bildirim" if i18n.current_language == "Türkçe" else "Report Issue / Feedback"))
         self.act_github_repo.setText("⭐ " + ("GitHub Deposu" if i18n.current_language == "Türkçe" else "GitHub Repository"))
