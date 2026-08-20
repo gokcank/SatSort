@@ -24,6 +24,7 @@ from PySide6.QtWidgets import (
 
 from ..core.models import Channel
 from ..core.parser import read_sdx_file, write_sdx_file, validate_channel_name
+from ..core.config import config
 from ..i18n import i18n, t
 from .theme import toggle_theme, get_current_theme
 from .channel_table import ChannelTableWidget
@@ -135,6 +136,10 @@ class MainWindow(QMainWindow):
         self.act_open.setToolTip(f"{t('T101')} (Ctrl+O)")
         self.act_open.triggered.connect(self.open_file)
         self.menu_file.addAction(self.act_open)
+
+        # Recent Files Submenu
+        self.menu_recent = self.menu_file.addMenu("🕒 " + ("Son Açılan Dosyalar" if i18n.current_language == "Türkçe" else "Recent Files"))
+        self._update_recent_files_menu()
 
         self.act_save = QAction(_create_material_icon("save", "#38bdf8"), "Kaydet" if i18n.current_language == "Türkçe" else "Save", self)
         self.act_save.setShortcut(QKeySequence.Save)
@@ -520,17 +525,13 @@ class MainWindow(QMainWindow):
         else:  # QMessageBox.Cancel
             return False
 
-    def open_file(self) -> bool:
-        if not self._maybe_save_changes():
-            return False
-
-        file_path, _ = QFileDialog.getOpenFileName(
-            self,
-            t("T101"),
-            "",
-            "SatcoDx Files (*.sdx);;All Files (*.*)",
-        )
-        if not file_path:
+    def load_file_path(self, file_path: str) -> bool:
+        """Loads a .sdx file directly by path with error handling and recent files update."""
+        if not os.path.exists(file_path):
+            is_tr = i18n.current_language == "Türkçe"
+            QMessageBox.warning(self, "SatSort", f"Dosya bulunamadı:\n{file_path}" if is_tr else f"File not found:\n{file_path}")
+            config.remove_recent_file(file_path)
+            self._update_recent_files_menu()
             return False
 
         try:
@@ -545,11 +546,64 @@ class MainWindow(QMainWindow):
             self.status_bar.showMessage(f"{len(channels)} {t('T118')} yüklendi.", 4000)
             if channels:
                 self.channel_table.selectRow(0)
+
+            config.add_recent_file(file_path)
+            self._update_recent_files_menu()
             return True
         except Exception as e:
             self._is_loading = False
             QMessageBox.critical(self, "Hata", f"Dosya açılamadı: {e}")
             return False
+
+    def _update_recent_files_menu(self) -> None:
+        """Dynamically populates the Recent Files submenu."""
+        self.menu_recent.clear()
+        recent_files = config.get_recent_files()
+        is_tr = i18n.current_language == "Türkçe"
+
+        if not recent_files:
+            act_empty = QAction("Boş" if is_tr else "Empty", self)
+            act_empty.setEnabled(False)
+            self.menu_recent.addAction(act_empty)
+            return
+
+        for i, path in enumerate(recent_files):
+            basename = os.path.basename(path)
+            act = QAction(f"{i + 1}. {basename}", self)
+            act.setToolTip(path)
+            act.triggered.connect(lambda checked=False, p=path: self._on_open_recent(p))
+            self.menu_recent.addAction(act)
+
+        self.menu_recent.addSeparator()
+        act_clear = QAction("🗑️ " + ("Listeyi Temizle" if is_tr else "Clear List"), self)
+        act_clear.triggered.connect(self._clear_recent_files)
+        self.menu_recent.addAction(act_clear)
+
+    def _on_open_recent(self, path: str) -> None:
+        """Opens a file selected from the Recent Files menu after prompting for dirty state."""
+        if not self._maybe_save_changes():
+            return
+        self.load_file_path(path)
+
+    def _clear_recent_files(self) -> None:
+        """Clears recent files list from persistent config and updates menu."""
+        config.clear_recent_files()
+        self._update_recent_files_menu()
+
+    def open_file(self) -> bool:
+        if not self._maybe_save_changes():
+            return False
+
+        file_path, _ = QFileDialog.getOpenFileName(
+            self,
+            t("T101"),
+            "",
+            "SatcoDx Files (*.sdx);;All Files (*.*)",
+        )
+        if not file_path:
+            return False
+
+        return self.load_file_path(file_path)
 
     def save_file(self) -> bool:
         channels = self.channel_table.get_channels()
@@ -571,6 +625,8 @@ class MainWindow(QMainWindow):
             self._current_file_path = file_path
             self._set_dirty(False)
             self.lbl_file_info.setText(f"Kayıt Yeri: {file_path}")
+            config.add_recent_file(file_path)
+            self._update_recent_files_menu()
             QMessageBox.information(self, "SatSort", t("T144"))  # Kayıt tamamlandı
             return True
         except Exception as e:
@@ -621,6 +677,8 @@ class MainWindow(QMainWindow):
 
         # Menus
         self.menu_file.setTitle(t("T100"))
+        self.menu_recent.setTitle("🕒 " + ("Son Açılan Dosyalar" if i18n.current_language == "Türkçe" else "Recent Files"))
+        self._update_recent_files_menu()
         self.menu_edit.setTitle("Düzenle" if i18n.current_language == "Türkçe" else ("Edit" if i18n.current_language == "English" else ("Bearbeiten" if i18n.current_language == "Deutsch" else "Éditer")))
         self.menu_tools.setTitle(t("T103"))
         self.menu_settings.setTitle("Ayarlar" if i18n.current_language == "Türkçe" else ("Settings" if i18n.current_language == "English" else ("Einstellungen" if i18n.current_language == "Deutsch" else "Paramètres")))
