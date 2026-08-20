@@ -1,0 +1,16 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=SatSort
+GenericName=Satellite Channel Editor
+GenericName[tr]=Uydu Kanal Listesi Düzenleyici
+Comment=Modern Linux Native SatcoDX Channel List Editor
+Comment[tr]=Modern Linux SatcoDX (.sdx) Uydu Kanal Listesi Düzenleyici
+Exec=python3 /home/gokcank/projects/Linux/SatSort/main.py %f
+Icon=satsort
+Terminal=false
+Categories=AudioVideo;Video;TV;
+MimeType=application/x-satcodx;
+StartupNotify=true
+StartupWMClass=satsort
+Keywords=satellite;channels;sdx;satcodx;tv;radio;vestel;turksat;
