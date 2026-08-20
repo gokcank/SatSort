@@ -112,8 +112,53 @@ class TestSatSortE2E(unittest.TestCase):
         self.assertEqual(t("T100"), "Menu")
         self.assertEqual(t("T101"), "Charger un fichier SatcoDx")
 
-        # Reset back to Turkish
-        i18n.set_language("Türkçe")
+    def test_batch_workflow_e2e(self):
+        from satsort.core.batch_tools import move_radios_to_end, normalize_channel_names, remove_duplicate_channels
+        # 1. Radios to end
+        reordered, moved = move_radios_to_end(self.channels)
+        self.assertEqual(moved, 1)
+        self.assertEqual(reordered[-1].channel_name, "KRAL FM")
+
+        # 2. Normalize names
+        dirty_channels = [
+            Channel(channel_name="   trt   1   hd  ", raw_line="SATCODX105" + " " * 122),
+            Channel(channel_name="atv", raw_line="SATCODX105" + " " * 122),
+        ]
+        cleaned, changed = normalize_channel_names(dirty_channels)
+        self.assertEqual(changed, 2)
+        self.assertEqual(cleaned[0].channel_name, "TRT 1 HD")
+        self.assertEqual(cleaned[1].channel_name, "ATV")
+
+        # 3. Deduplicate
+        dups = [self.channels[0], self.channels[1], self.channels[0]]
+        deduped, count = remove_duplicate_channels(dups)
+        self.assertEqual(count, 1)
+        self.assertEqual(len(deduped), 2)
+
+    def test_reference_sorting_workflow_e2e(self):
+        from satsort.core.reference_sorter import sort_channels_by_reference
+        target = [self.channels[2], self.channels[0], self.channels[1]]  # ATV, TRT1, TRT SPOR
+        reference = [self.channels[0], self.channels[1], self.channels[2]]  # TRT1, TRT SPOR, ATV
+
+        sorted_res, matched, unmatched = sort_channels_by_reference(target, reference)
+        self.assertEqual(matched, 3)
+        self.assertEqual(unmatched, 0)
+        self.assertEqual([c.channel_name for c in sorted_res], ["TRT 1 HD", "TRT SPOR", "ATV"])
+
+    def test_export_workflow_e2e(self):
+        from satsort.core.exporter import export_to_csv, export_to_txt, export_to_m3u
+        with tempfile.TemporaryDirectory() as tmpdir:
+            csv_path = os.path.join(tmpdir, "test.csv")
+            txt_path = os.path.join(tmpdir, "test.txt")
+            m3u_path = os.path.join(tmpdir, "test.m3u")
+
+            export_to_csv(self.channels, csv_path)
+            export_to_txt(self.channels, txt_path)
+            export_to_m3u(self.channels, m3u_path)
+
+            self.assertTrue(os.path.exists(csv_path))
+            self.assertTrue(os.path.exists(txt_path))
+            self.assertTrue(os.path.exists(m3u_path))
 
 
 if __name__ == "__main__":
