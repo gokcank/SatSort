@@ -65,33 +65,45 @@ QMenu::separator {
 QToolBar {
     background-color: #14171d;
     border-bottom: 1px solid #2d3748;
-    spacing: 6px;
-    padding: 6px 10px;
+    spacing: 2px;
+    padding: 0px 4px;
+}
+
+QToolBar::separator {
+    width: 1px;
+    background-color: #334155;
+    margin: 6px 3px;
 }
 
 QToolButton {
-    background-color: #242b38;
-    color: #e2e8f0;
-    border: 1px solid #334155;
+    background-color: transparent;
+    color: #94a3b8;
+    border: 1px solid transparent;
     border-radius: 6px;
-    padding: 6px 12px;
+    padding: 1px 4px;
+    margin: 0px 1px;
+    font-size: 10.5px;
     font-weight: 500;
+    min-width: 48px;
+    max-width: 90px;
 }
 
 QToolButton:hover {
-    background-color: #334155;
-    border-color: #475569;
-    color: #ffffff;
+    background-color: #1e222b;
+    border-color: #334155;
+    color: #f8fafc;
 }
 
-QToolButton:pressed {
-    background-color: #1e293b;
+QToolButton:pressed, QToolButton:checked {
+    background-color: rgba(59, 130, 246, 0.2);
+    border: 1px solid #3b82f6;
+    color: #f8fafc;
 }
 
 QToolButton:disabled {
-    background-color: #161b22;
-    color: #64748b;
-    border-color: #1e293b;
+    background-color: transparent;
+    color: #475569;
+    border-color: transparent;
 }
 
 /* Buttons */
@@ -317,33 +329,45 @@ QMenu::separator {
 QToolBar {
     background-color: #ffffff;
     border-bottom: 1px solid #e2e8f0;
-    spacing: 6px;
-    padding: 6px 10px;
+    spacing: 2px;
+    padding: 0px 4px;
+}
+
+QToolBar::separator {
+    width: 1px;
+    background-color: #cbd5e1;
+    margin: 6px 3px;
 }
 
 QToolButton {
-    background-color: #f1f5f9;
-    color: #1e293b;
-    border: 1px solid #cbd5e1;
+    background-color: transparent;
+    color: #64748b;
+    border: 1px solid transparent;
     border-radius: 6px;
-    padding: 6px 12px;
+    padding: 1px 4px;
+    margin: 0px 1px;
+    font-size: 10.5px;
     font-weight: 500;
+    min-width: 48px;
+    max-width: 90px;
 }
 
 QToolButton:hover {
-    background-color: #e2e8f0;
-    border-color: #94a3b8;
+    background-color: #f1f5f9;
+    border-color: #cbd5e1;
     color: #0f172a;
 }
 
-QToolButton:pressed {
-    background-color: #cbd5e1;
+QToolButton:pressed, QToolButton:checked {
+    background-color: #dbeafe;
+    border: 1px solid #3b82f6;
+    color: #1d4ed8;
 }
 
 QToolButton:disabled {
-    background-color: #f8fafc;
+    background-color: transparent;
     color: #94a3b8;
-    border-color: #e2e8f0;
+    border-color: transparent;
 }
 
 /* Buttons */

@@ -346,21 +346,21 @@ class TestComprehensiveSatSort(unittest.TestCase):
         table = self.win.channel_table
         # Initially none checked
         self.assertFalse(table.is_all_checked())
-        self.assertEqual(self.win.act_toggle_check.text(), "☑️ Tümünü İşaretle")
+        self.assertEqual(self.win.act_toggle_check.text(), "Tümünü İşaretle")
 
         # Toggle -> checks all 5 channels
         res = table.toggle_all_checked()
         self.assertTrue(res)
         self.assertTrue(table.is_all_checked())
         self.assertEqual(len(table.get_checked_channels()), table.rowCount())
-        self.assertEqual(self.win.act_toggle_check.text(), "⚪ " + t("T108"))
+        self.assertEqual(self.win.act_toggle_check.text(), t("T108"))
 
         # Toggle again -> unchecks all
         res = table.toggle_all_checked()
         self.assertFalse(res)
         self.assertFalse(table.is_all_checked())
         self.assertEqual(len(table.get_checked_channels()), 0)
-        self.assertEqual(self.win.act_toggle_check.text(), "☑️ Tümünü İşaretle")
+        self.assertEqual(self.win.act_toggle_check.text(), "Tümünü İşaretle")
 
     # -------------------------------------------------------------
     # 3. SEARCH BAR & LIVE FILTERING

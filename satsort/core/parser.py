@@ -55,15 +55,15 @@ def parse_sdx_line(line: str) -> Optional[Channel]:
     """
     Parses a single SatcoDX fixed-width formatted text line into a Channel object.
     
-    Fixed-width byte specification:
-      0..9    : Header / Index prefix
+    Fixed-width byte specification (SatcoDX 105 standard):
+      0..9    : Header / Index prefix (10 chars, e.g. SATCODX105)
       10..27  : Satellite Name (18 chars)
       28      : Channel Type (1 char: T, R, D, -)
-      29..32  : Broadcast System (4 chars)
+      29..32  : Broadcast System (4 chars, e.g. MPG4, MPG2)
       33..41  : Frequency (9 chars)
       42      : Polarization (1 char: 0=Vertical, 1=Horizontal)
       43..50  : Channel Name Part 1 (8 chars)
-      51..68  : Additional Transponder data
+      51..68  : Additional Transponder data (Orbital Pos, Country, etc.)
       69..73  : Symbol Rate (5 chars)
       74      : FEC Code (1 char)
       75..78  : VPID (4 chars)
@@ -77,13 +77,13 @@ def parse_sdx_line(line: str) -> Optional[Channel]:
       106..107: Country Code (2 chars)
       108..110: Language Code (3 chars)
       111..114: Crypto / Encryption Code (4 chars)
-      115..126: Channel Name Part 2 (12 chars)
+      115..131: Channel Name Part 2 (Extended Name, up to 16 chars)
     """
     if not line or len(line.strip()) < 30:
         return None
 
-    # Ensure minimum line length for slicing
-    line_padded = line.ljust(127)
+    # Ensure fixed 132-char record length for slicing
+    line_padded = line.ljust(132)
 
     # 1. Satellite Name
     satellite_name = safe_substring(line_padded, 10, 18).strip()
@@ -103,9 +103,9 @@ def parse_sdx_line(line: str) -> Optional[Channel]:
     pol_char = line_padded[42] if len(line_padded) > 42 else "0"
     polarization = Polarization.VERTICAL if pol_char == "0" else Polarization.HORIZONTAL
 
-    # 6. Channel Name (Part 1 [8 chars] + Part 2 [12 chars])
+    # 6. Channel Name (Part 1 [8 chars, 43..51] + Part 2 [17 chars, 115..132])
     name_part1 = safe_substring(line_padded, 43, 8)
-    name_part2 = safe_substring(line_padded, 115, 12)
+    name_part2 = safe_substring(line_padded, 115, 17)
     channel_name = clean_channel_name((name_part1 + name_part2).rstrip())
 
     # 7. Symbol Rate & FEC
@@ -128,7 +128,7 @@ def parse_sdx_line(line: str) -> Optional[Channel]:
     crypto = safe_substring(line_padded, 111, 4).strip()
 
     return Channel(
-        raw_line=line.rstrip("\r\n"),
+        raw_line=line.rstrip("\r\n").ljust(132)[:132],
         satellite_name=satellite_name,
         channel_name=channel_name,
         channel_type=channel_type,
@@ -152,37 +152,40 @@ def parse_sdx_line(line: str) -> Optional[Channel]:
 
 def read_sdx_file(file_path: str, encoding: Optional[str] = None) -> List[Channel]:
     """
-    Reads a .sdx file and returns a list of Channel objects.
-    Tries multiple candidate encodings (cp1254, latin1, utf-8) to ensure non-ASCII characters are parsed properly.
+    Reads a .sdx file and returns a list of Channel objects with 100% byte preservation.
+    Opens in binary mode to preserve internal null padding bytes and line structures.
+    Tries multiple candidate encodings (cp1254, iso-8859-9, latin1, utf-8).
     """
     if not os.path.exists(file_path):
         raise FileNotFoundError(f"File not found: {file_path}")
 
-    encodings_to_try = [encoding] if encoding else ["cp1254", "latin1", "utf-8", "iso-8859-9"]
-    content: Optional[str] = None
+    with open(file_path, "rb") as f:
+        data = f.read()
 
-    for enc in encodings_to_try:
-        try:
-            with open(file_path, "r", encoding=enc, errors="replace") as f:
-                content = f.read()
-            break
-        except Exception:
-            continue
+    # Detect line delimiter (CRLF vs LF)
+    delimiter = b"\r\n" if b"\r\n" in data else b"\n"
+    raw_lines = data.split(delimiter)
 
-    if content is None:
-        with open(file_path, "r", encoding="latin1", errors="replace") as f:
-            content = f.read()
-
-    # Strip terminating null bytes
-    content = content.replace("\x00", "")
-
+    encodings_to_try = [encoding] if encoding else ["cp1254", "iso-8859-9", "latin1", "utf-8"]
     channels: List[Channel] = []
-    lines = content.splitlines()
 
-    for line in lines:
-        if not line.strip():
+    for raw_bytes in raw_lines:
+        # Check for trailer / EOF marker (starts with null byte \x00)
+        if raw_bytes.startswith(b"\x00") or not raw_bytes.strip(b" \t\r\n"):
             continue
-        channel = parse_sdx_line(line)
+
+        line_str: Optional[str] = None
+        for enc in encodings_to_try:
+            try:
+                line_str = raw_bytes.decode(enc)
+                break
+            except Exception:
+                continue
+
+        if line_str is None:
+            line_str = raw_bytes.decode("latin1", errors="replace")
+
+        channel = parse_sdx_line(line_str)
         if channel:
             channels.append(channel)
 

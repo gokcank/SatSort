@@ -6,8 +6,9 @@ from __future__ import annotations
 import os
 from typing import List, Optional
 
-from PySide6.QtCore import Qt, QSize
-from PySide6.QtGui import QAction, QKeySequence, QActionGroup
+from PySide6.QtCore import Qt, QSize, QByteArray
+from PySide6.QtGui import QAction, QKeySequence, QActionGroup, QIcon, QPixmap, QPainter
+from PySide6.QtSvg import QSvgRenderer
 from PySide6.QtWidgets import (
     QMainWindow,
     QWidget,
@@ -36,6 +37,38 @@ from .dialogs import (
     LanguageSelectionDialog,
     AboutDialog,
 )
+
+MATERIAL_SVGS = {
+    "folder_open": '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="{color}"><path d="M20 6h-8l-2-2H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm0 12H4V8h16v10z"/></svg>',
+    "save": '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="{color}"><path d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm2 16H5V5h11.17L19 7.83V19zm-7-7c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3zM6 6h9v4H6z"/></svg>',
+    "close": '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="{color}"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>',
+    "delete": '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="{color}"><path d="M16 9v10H8V9h8m-1.5-6h-5l-1 1H5v2h14V4h-3.5l-1-1zM18 7H6v12c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7z"/></svg>',
+    "library_add_check": '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="{color}"><path d="M20 2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H8V4h12v12zm-7.53-2.47L18.47 7.53l-1.41-1.41-4.59 4.59-1.59-1.59-1.41 1.41 3 3zM4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6z"/></svg>',
+    "deselect": '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="{color}"><path d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/></svg>',
+    "compare_arrows": '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="{color}"><path d="M9.01 14H2v2h7.01v3L13 15.5 9.01 12v2zm5.98-1v-3H22V8h-7.01V5L11 8.5l3.99 3.5z"/></svg>',
+    "download": '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="{color}"><path d="M5 20h14v-2H5v2zM19 9h-4V3H9v6H5l7 7 7-7z"/></svg>',
+    "info": '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="{color}"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>',
+    "arrow_upward": '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="{color}"><path d="M4 12l1.41 1.41L11 7.83V20h2V7.83l5.58 5.59L20 12l-8-8-8 8z"/></svg>',
+    "arrow_downward": '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="{color}"><path d="M20 12l-1.41-1.41L13 16.17V4h-2v12.17l-5.58-5.59L4 12l8 8 8-8z"/></svg>',
+    "exit_to_app": '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="{color}"><path d="M10.09 15.59L11.5 17l5-5-5-5-1.41 1.41L12.67 11H3v2h9.67l-2.58 2.59zM19 3H5c-1.11 0-2 .9-2 2v4h2V5h14v14H5v-4H3v4c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/></svg>',
+    "help_outline": '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="{color}"><path d="M11 18h2v-2h-2v2zm1-16C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm0-14c-2.21 0-4 1.79-4 4h2c0-1.1.9-2 2-2s2 .9 2 2c0 2-3 1.75-3 5h2c0-2.25 3-2.5 3-5 0-2.21-1.79-4-4-4z"/></svg>'
+}
+
+
+def _create_material_icon(name: str, color: str = "#38bdf8", size: int = 20) -> QIcon:
+    """Creates a crisp, anti-aliased vector QIcon from standard Google Material Symbols SVG."""
+    svg_template = MATERIAL_SVGS.get(name, "")
+    if not svg_template:
+        return QIcon()
+    svg_data = svg_template.format(color=color).encode("utf-8")
+    renderer = QSvgRenderer(QByteArray(svg_data))
+    pixmap = QPixmap(size, size)
+    pixmap.fill(Qt.transparent)
+    painter = QPainter(pixmap)
+    painter.setRenderHint(QPainter.Antialiasing)
+    renderer.render(painter)
+    painter.end()
+    return QIcon(pixmap)
 
 
 class MainWindow(QMainWindow):
@@ -97,27 +130,27 @@ class MainWindow(QMainWindow):
 
         # 1. File Menu
         self.menu_file = menu_bar.addMenu(t("T100"))  # Menü / Menu
-        self.act_open = QAction("📂 Listeyi Aç", self)
+        self.act_open = QAction(_create_material_icon("folder_open", "#38bdf8"), t("T101"), self)
         self.act_open.setShortcut(QKeySequence.Open)
-        self.act_open.setToolTip("SDX Kanal Listesi Aç (Ctrl+O)")
+        self.act_open.setToolTip(f"{t('T101')} (Ctrl+O)")
         self.act_open.triggered.connect(self.open_file)
         self.menu_file.addAction(self.act_open)
 
-        self.act_save = QAction("💾 Listeyi Kaydet", self)
+        self.act_save = QAction(_create_material_icon("save", "#38bdf8"), "Kaydet" if i18n.current_language == "Türkçe" else "Save", self)
         self.act_save.setShortcut(QKeySequence.Save)
-        self.act_save.setToolTip("Kanal Listesini Kaydet (Ctrl+S)")
+        self.act_save.setToolTip(f"{t('T102')} (Ctrl+S)")
         self.act_save.triggered.connect(self.save_file)
         self.menu_file.addAction(self.act_save)
 
-        self.act_close_list = QAction("❌ Listeyi Kapat", self)
+        self.act_close_list = QAction(_create_material_icon("close", "#ef4444"), t("T107"), self)
         self.act_close_list.setShortcut(QKeySequence.Close)
-        self.act_close_list.setToolTip("Açık Kanal Listesini Kapat (Ctrl+W)")
+        self.act_close_list.setToolTip(f"{t('T107')} (Ctrl+W)")
         self.act_close_list.triggered.connect(self.close_file)
         self.menu_file.addAction(self.act_close_list)
 
         self.menu_file.addSeparator()
 
-        self.act_quit = QAction("🚪 Çıkış", self)
+        self.act_quit = QAction(_create_material_icon("exit_to_app", "#94a3b8"), "Çıkış", self)
         self.act_quit.setShortcut(QKeySequence.Quit)
         self.act_quit.setToolTip("Uygulamadan Çık (Ctrl+Q)")
         self.act_quit.triggered.connect(self.close)
@@ -125,59 +158,59 @@ class MainWindow(QMainWindow):
 
         # 2. Edit Menu
         self.menu_edit = menu_bar.addMenu("Düzenle")
-        self.act_move_up = QAction("⬆️ " + t("T109"), self)
+        self.act_move_up = QAction(_create_material_icon("arrow_upward", "#38bdf8"), t("T109"), self)
         self.act_move_up.setShortcut("Alt+Up")
-        self.act_move_up.setToolTip("Seçili Kanalı Yukarı Taşı (Alt+Up)")
+        self.act_move_up.setToolTip(f"{t('T109')} (Alt+Up)")
         self.act_move_up.triggered.connect(self.channel_table.move_selected_up)
         self.menu_edit.addAction(self.act_move_up)
 
-        self.act_move_down = QAction("⬇️ " + t("T110"), self)
+        self.act_move_down = QAction(_create_material_icon("arrow_downward", "#38bdf8"), t("T110"), self)
         self.act_move_down.setShortcut("Alt+Down")
-        self.act_move_down.setToolTip("Seçili Kanalı Aşağı Taşı (Alt+Down)")
+        self.act_move_down.setToolTip(f"{t('T110')} (Alt+Down)")
         self.act_move_down.triggered.connect(self.channel_table.move_selected_down)
         self.menu_edit.addAction(self.act_move_down)
 
         self.menu_edit.addSeparator()
 
-        self.act_del_sel = QAction("🗑️ " + t("T111"), self)
+        self.act_del_sel = QAction(_create_material_icon("delete", "#ef4444"), "Seçilenleri Sil" if i18n.current_language == "Türkçe" else "Delete Selected", self)
         self.act_del_sel.setShortcut(QKeySequence.Delete)
-        self.act_del_sel.setToolTip("Seçili veya İşaretli Kanalları Sil (Delete)")
+        self.act_del_sel.setToolTip(f"{t('T111')} (Delete)")
         self.act_del_sel.triggered.connect(self.channel_table.smart_delete)
         self.menu_edit.addAction(self.act_del_sel)
 
-        self.act_del_chk = QAction("❌ " + t("T112"), self)
-        self.act_del_chk.setToolTip("Tüm İşaretli Kanalları Sil")
+        self.act_del_chk = QAction(_create_material_icon("delete", "#ef4444"), t("T112"), self)
+        self.act_del_chk.setToolTip(t("T112"))
         self.act_del_chk.triggered.connect(self.channel_table.delete_checked)
         self.menu_edit.addAction(self.act_del_chk)
 
         self.menu_edit.addSeparator()
 
-        self.act_toggle_check = QAction("☑️ Tümünü İşaretle", self)
+        self.act_toggle_check = QAction(_create_material_icon("library_add_check", "#38bdf8"), "Tümünü İşaretle" if i18n.current_language == "Türkçe" else "Select All", self)
         self.act_toggle_check.setShortcut(QKeySequence("Ctrl+A"))
-        self.act_toggle_check.setToolTip("Tüm Kanalları İşaretle / İşaretleri Kaldır (Ctrl+A)")
+        self.act_toggle_check.setToolTip(f"{t('T108')} (Ctrl+A)")
         self.act_toggle_check.triggered.connect(self.channel_table.toggle_all_checked)
         self.menu_edit.addAction(self.act_toggle_check)
 
         # 3. Tools Menu
         self.menu_tools = menu_bar.addMenu(t("T103"))  # Çoklu İşlemler
-        self.act_compare = QAction("📊 " + t("T104"), self)  # Karşılaştırma
+        self.act_compare = QAction(_create_material_icon("compare_arrows", "#38bdf8"), "Karşılaştır" if i18n.current_language == "Türkçe" else t("T104"), self)  # Karşılaştırma
         self.act_compare.setShortcut(QKeySequence("Ctrl+K"))
-        self.act_compare.setToolTip("İki SDX Dosyasını Karşılaştır (Ctrl+K)")
+        self.act_compare.setToolTip(f"{t('T104')} (Ctrl+K)")
         self.act_compare.triggered.connect(self._open_compare_dialog)
         self.menu_tools.addAction(self.act_compare)
 
-        self.act_import = QAction("📥 " + t("T105"), self)  # Farklı Dosyadan Kopyalama
+        self.act_import = QAction(_create_material_icon("download", "#38bdf8"), "İçe Aktar" if i18n.current_language == "Türkçe" else t("T105"), self)  # Farklı Dosyadan Kopyalama
         self.act_import.setShortcut(QKeySequence("Ctrl+I"))
-        self.act_import.setToolTip("Farklı SDX Dosyasından Kanal Aktar (Ctrl+I)")
+        self.act_import.setToolTip(f"{t('T105')} (Ctrl+I)")
         self.act_import.triggered.connect(self._open_import_dialog)
         self.menu_tools.addAction(self.act_import)
 
         # 4. View Menu
         self.menu_view = menu_bar.addMenu("Görünüm")
-        self.act_toggle_sidebar = QAction("📑 " + t("T119"), self, checkable=True)
+        self.act_toggle_sidebar = QAction(_create_material_icon("info", "#3b82f6"), "Bilgi Paneli" if i18n.current_language == "Türkçe" else "Info Panel", self, checkable=True)
         self.act_toggle_sidebar.setChecked(True)
         self.act_toggle_sidebar.setShortcut(QKeySequence("F4"))
-        self.act_toggle_sidebar.setToolTip("Sağ Detay Panelini Göster/Gizle (F4)")
+        self.act_toggle_sidebar.setToolTip(f"{t('T119')} (F4)")
         self.act_toggle_sidebar.toggled.connect(self.toggle_sidebar)
         self.menu_view.addAction(self.act_toggle_sidebar)
 
@@ -206,16 +239,18 @@ class MainWindow(QMainWindow):
 
         # 6. Help Menu
         self.menu_help = menu_bar.addMenu("Yardım")
-        self.act_about = QAction("ℹ️ " + t("T106"), self)
+        self.act_about = QAction(_create_material_icon("help_outline", "#38bdf8"), "ℹ️ " + t("T106"), self)
         self.act_about.setShortcut(QKeySequence("F1"))
         self.act_about.setToolTip("SatSort Hakkında (F1)")
         self.act_about.triggered.connect(self.show_about)
         self.menu_help.addAction(self.act_about)
 
-        # Top Toolbar (Cleaned UX Layout)
+        # Top Toolbar (Modern Stitch Vertical Icon-Above-Text Layout)
         self.toolbar = QToolBar("Main Toolbar")
+        self.toolbar.setToolButtonStyle(Qt.ToolButtonTextUnderIcon)
         self.toolbar.setIconSize(QSize(20, 20))
         self.toolbar.setMovable(False)
+        self.toolbar.setFixedHeight(48)
         self.addToolBar(self.toolbar)
 
         # Group 1: File Operations
@@ -397,11 +432,14 @@ class MainWindow(QMainWindow):
         # Synchronize toggle check all / uncheck all action state
         if hasattr(self, "act_toggle_check"):
             if channels and checked_count == len(channels):
-                self.act_toggle_check.setText("⚪ " + t("T108"))  # İşaretleri Kaldır
-                self.act_toggle_check.setToolTip(t("T108") + " (Ctrl+A)")
+                self.act_toggle_check.setText(t("T108"))  # İşaretleri Kaldır
+                self.act_toggle_check.setToolTip(f"{t('T108')} (Ctrl+A)")
+                self.act_toggle_check.setIcon(_create_material_icon("deselect", "#94a3b8"))
             else:
-                self.act_toggle_check.setText("☑️ Tümünü İşaretle")
-                self.act_toggle_check.setToolTip("Tüm kanalları işaretle (Ctrl+A)")
+                check_label = "Tümünü İşaretle" if i18n.current_language == "Türkçe" else ("Select All" if i18n.current_language == "English" else ("Alle auswählen" if i18n.current_language == "Deutsch" else "Tout sélectionner"))
+                self.act_toggle_check.setText(check_label)
+                self.act_toggle_check.setToolTip(f"{check_label} (Ctrl+A)")
+                self.act_toggle_check.setIcon(_create_material_icon("library_add_check", "#38bdf8"))
 
         if hasattr(self, "search_bar"):
             self.search_bar.set_has_channels(len(channels) > 0)
@@ -590,41 +628,41 @@ class MainWindow(QMainWindow):
         self.menu_help.setTitle("Yardım" if i18n.current_language == "Türkçe" else ("Help" if i18n.current_language == "English" else ("Hilfe" if i18n.current_language == "Deutsch" else "Aide")))
 
         # File actions
-        self.act_open.setText("📂 " + t("T101"))
+        self.act_open.setText(t("T101"))
         self.act_open.setToolTip(f"{t('T101')} (Ctrl+O)")
 
-        self.act_save.setText("💾 " + t("T102"))
+        self.act_save.setText(t("T102"))
         self.act_save.setToolTip(f"{t('T102')} (Ctrl+S)")
 
-        self.act_close_list.setText("❌ " + t("T107"))
-        self.act_close_list.setToolTip(f"{t('T107')} (Ctrl+W)")
+        self.act_close_list.setText(t("T127"))
+        self.act_close_list.setToolTip(f"{t('T127')} (Ctrl+W)")
 
-        self.act_quit.setText("🚪 " + t("T107"))
-        self.act_quit.setToolTip(f"{t('T107')} (Ctrl+Q)")
+        self.act_quit.setText("Çıkış" if i18n.current_language == "Türkçe" else ("Quit" if i18n.current_language == "English" else ("Beenden" if i18n.current_language == "Deutsch" else "Quitter")))
+        self.act_quit.setToolTip("Uygulamadan Çık (Ctrl+Q)")
 
         # Edit actions
-        self.act_move_up.setText("⬆️ " + t("T109"))
+        self.act_move_up.setText(t("T109"))
         self.act_move_up.setToolTip(f"{t('T109')} (Alt+Up)")
 
-        self.act_move_down.setText("⬇️ " + t("T110"))
+        self.act_move_down.setText(t("T110"))
         self.act_move_down.setToolTip(f"{t('T110')} (Alt+Down)")
 
-        self.act_del_sel.setText("🗑️ " + t("T111"))
+        self.act_del_sel.setText(t("T111"))
         self.act_del_sel.setToolTip(f"{t('T111')} (Delete)")
 
-        self.act_del_chk.setText("❌ " + t("T112"))
+        self.act_del_chk.setText(t("T112"))
         self.act_del_chk.setToolTip(t("T112"))
 
-        self.act_compare.setText("📊 " + t("T104"))
+        self.act_compare.setText(t("T104"))
         self.act_compare.setToolTip(f"{t('T104')} (Ctrl+K)")
 
-        self.act_import.setText("📥 " + t("T105"))
+        self.act_import.setText(t("T105"))
         self.act_import.setToolTip(f"{t('T105')} (Ctrl+I)")
 
-        self.act_toggle_sidebar.setText("📑 " + t("T119"))
+        self.act_toggle_sidebar.setText(t("T119"))
         self.act_toggle_sidebar.setToolTip(f"{t('T119')} (F4)")
 
-        self.act_about.setText("ℹ️ " + t("T106"))
+        self.act_about.setText(t("T106"))
         self.act_about.setToolTip(f"{t('T106')} (F1)")
 
         # Subcomponents
