@@ -1,0 +1,106 @@
+name: SatSort Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+jobs:
+  build-and-release:
+    name: Build & Publish Release Packages
+    runs-on: ubuntu-22.04
+    timeout-minutes: 20
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install Qt6 & Linux system dependencies
+        run: |
+          sudo apt-get update -o Acquire::Retries=3 -o Acquire::http::Timeout="20"
+          sudo apt-get install -y --no-install-recommends -o Acquire::Retries=3 -o Acquire::http::Timeout="20" \
+            xvfb libxkbcommon-x11-0 libegl1 libgl1 libxcb-cursor0 libxcb-icccm4 libxcb-image0 \
+            libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-shape0 libxcb-sync1 \
+            libxcb-xfixes0 libxcb-xinerama0 libxcb-xkb1 wget file desktop-file-utils
+
+      - name: Install Python dependencies & PyInstaller
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pyinstaller
+
+      - name: Run Test Suite
+        run: |
+          xvfb-run python3 -m unittest discover tests
+
+      - name: Build Standalone Binary & .deb Package
+        run: |
+          chmod +x build_deb.sh
+          ./build_deb.sh
+
+      - name: Build AppImage Package
+        run: |
+          # Download appimagetool
+          wget -q "https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage" -O appimagetool-x86_64.AppImage
+          chmod +x appimagetool-x86_64.AppImage
+          
+          # Extract appimagetool (runs cleanly in Docker/CI environment without FUSE)
+          ./appimagetool-x86_64.AppImage --appimage-extract
+          
+          # Prepare AppDir
+          rm -rf AppDir
+          mkdir -p AppDir/usr/bin AppDir/usr/share/icons/hicolor/scalable/apps AppDir/usr/share/mime/packages
+          
+          cp dist/satsort AppDir/usr/bin/satsort
+          chmod +x AppDir/usr/bin/satsort
+          
+          sed "s|Exec=.*|Exec=satsort %f|g" satsort.desktop > AppDir/satsort.desktop
+          cp assets/satsort.svg AppDir/satsort.svg
+          cp assets/satsort.svg AppDir/usr/share/icons/hicolor/scalable/apps/satsort.svg
+          cp assets/satsort.svg AppDir/.DirIcon
+          cp satsort-mime.xml AppDir/usr/share/mime/packages/satsort.xml
+          
+          cat <<'EOF' > AppDir/AppRun
+          #!/bin/sh
+          SELF=$(readlink -f "$0")
+          HERE=${SELF%/*}
+          export PATH="${HERE}/usr/bin:${PATH}"
+          export LD_LIBRARY_PATH="${HERE}/usr/lib:${LD_LIBRARY_PATH}"
+          export XDG_DATA_DIRS="${HERE}/usr/share:${XDG_DATA_DIRS}"
+          exec "${HERE}/usr/bin/satsort" "$@"
+          EOF
+          chmod +x AppDir/AppRun
+          
+          mkdir -p release_output
+          ARCH=x86_64 ./squashfs-root/AppRun AppDir release_output/SatSort-1.0.0-x86_64.AppImage
+
+      - name: Prepare Standalone Binary Deliverable
+        run: |
+          cp dist/satsort release_output/satsort-linux-x86_64
+          chmod +x release_output/satsort-linux-x86_64
+
+      - name: List Release Deliverables
+        run: |
+          ls -lah release_output/
+
+      - name: Create GitHub Release and Upload Assets
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          name: SatSort ${{ github.ref_name }}
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+          files: |
+            release_output/SatSort-1.0.0-x86_64.AppImage
+            release_output/satsort_1.0.0_amd64.deb
+            release_output/satsort-linux-x86_64
