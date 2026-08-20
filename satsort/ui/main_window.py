@@ -44,6 +44,7 @@ from .dialogs import (
     CompareFilesDialog,
     LanguageSelectionDialog,
     AboutDialog,
+    ReferenceSortDialog,
 )
 
 MATERIAL_SVGS = {
@@ -241,6 +242,12 @@ class MainWindow(QMainWindow):
         self.act_remove_duplicates = QAction("🔍 " + ("Çift / Mükerrer Kanalları Temizle..." if is_tr else "Remove Duplicate Channels..."), self)
         self.act_remove_duplicates.triggered.connect(self._batch_remove_duplicates)
         self.menu_tools.addAction(self.act_remove_duplicates)
+
+        self.menu_tools.addSeparator()
+
+        self.act_ref_sort = QAction("🔗 " + ("Referans Liste ile Sırala..." if is_tr else "Sort by Reference List..."), self)
+        self.act_ref_sort.triggered.connect(self._open_reference_sort_dialog)
+        self.menu_tools.addAction(self.act_ref_sort)
 
         # 4. Settings Menu
         self.menu_settings = menu_bar.addMenu("Ayarlar" if i18n.current_language == "Türkçe" else "Settings")
@@ -558,6 +565,22 @@ class MainWindow(QMainWindow):
             current.insert(0, ch)
         self.channel_table.set_channels(current)
         self._set_dirty(True)
+
+    def _open_reference_sort_dialog(self) -> None:
+        current = self.channel_table.get_channels()
+        if not current:
+            QMessageBox.warning(self, "SatSort", t("T145"))
+            return
+
+        dlg = ReferenceSortDialog(current, self)
+        dlg.sorting_applied.connect(self._on_reference_sorting_applied)
+        dlg.exec()
+
+    def _on_reference_sorting_applied(self, sorted_channels: List[Channel]) -> None:
+        self.channel_table.set_channels(sorted_channels)
+        self._set_dirty(True)
+        is_tr = i18n.current_language == "Türkçe"
+        self.status_bar.showMessage("Referans sıralama başarıyla uygulandı." if is_tr else "Reference sorting applied successfully.", 4000)
 
     def _set_dirty(self, dirty: bool = True) -> None:
         self._is_dirty = dirty
@@ -888,6 +911,7 @@ class MainWindow(QMainWindow):
         self.act_remove_scrambled.setText("🔒 " + ("Şifreli Kanalları Sil..." if is_tr else "Remove Scrambled Channels..."))
         self.act_normalize_names.setText("🔤 " + ("Kanal İsimlerini Standartlaştır" if is_tr else "Normalize Channel Names"))
         self.act_remove_duplicates.setText("🔍 " + ("Çift / Mükerrer Kanalları Temizle..." if is_tr else "Remove Duplicate Channels..."))
+        self.act_ref_sort.setText("🔗 " + ("Referans Liste ile Sırala..." if is_tr else "Sort by Reference List..."))
 
         self.act_toggle_sidebar.setText(t("T119"))
         self.act_toggle_sidebar.setToolTip(f"{t('T119')} (F4)")
