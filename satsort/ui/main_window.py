@@ -32,6 +32,7 @@ from ..core.batch_tools import (
     normalize_channel_names,
     remove_duplicate_channels,
 )
+from ..core.exporter import export_to_csv, export_to_txt, export_to_m3u
 from ..i18n import i18n, t
 from .theme import toggle_theme, get_current_theme
 from .channel_table import ChannelTableWidget
@@ -154,6 +155,21 @@ class MainWindow(QMainWindow):
         self.act_save.setToolTip(f"{t('T102')} (Ctrl+S)")
         self.act_save.triggered.connect(self.save_file)
         self.menu_file.addAction(self.act_save)
+
+        # Export Submenu
+        is_tr = i18n.current_language == "Türkçe"
+        self.menu_export = self.menu_file.addMenu("📤 " + ("Dışa Aktar" if is_tr else "Export"))
+        self.act_export_csv = QAction("📄 " + ("CSV Dosyası Olarak (.csv)..." if is_tr else "As CSV File (.csv)..."), self)
+        self.act_export_csv.triggered.connect(self._export_csv)
+        self.menu_export.addAction(self.act_export_csv)
+
+        self.act_export_txt = QAction("📝 " + ("Metin Dosyası Olarak (.txt)..." if is_tr else "As Text File (.txt)..."), self)
+        self.act_export_txt.triggered.connect(self._export_txt)
+        self.menu_export.addAction(self.act_export_txt)
+
+        self.act_export_m3u = QAction("📺 " + ("M3U Listesi Olarak (.m3u)..." if is_tr else "As M3U Playlist (.m3u)..."), self)
+        self.act_export_m3u.triggered.connect(self._export_m3u)
+        self.menu_export.addAction(self.act_export_m3u)
 
         self.act_close_list = QAction(_create_material_icon("close", "#ef4444"), t("T107"), self)
         self.act_close_list.setShortcut(QKeySequence.Close)
@@ -582,6 +598,66 @@ class MainWindow(QMainWindow):
         is_tr = i18n.current_language == "Türkçe"
         self.status_bar.showMessage("Referans sıralama başarıyla uygulandı." if is_tr else "Reference sorting applied successfully.", 4000)
 
+    def _export_csv(self) -> None:
+        channels = self.channel_table.get_channels()
+        if not channels:
+            QMessageBox.warning(self, "SatSort", t("T145"))
+            return
+
+        is_tr = i18n.current_language == "Türkçe"
+        file_path, _ = QFileDialog.getSaveFileName(
+            self,
+            "CSV Olarak Dışa Aktar" if is_tr else "Export to CSV",
+            "channels.csv",
+            "CSV Files (*.csv);;All Files (*.*)",
+        )
+        if file_path:
+            try:
+                export_to_csv(channels, file_path)
+                self.status_bar.showMessage(f"CSV başarıyla kaydedildi: {file_path}" if is_tr else f"Exported CSV: {file_path}", 4000)
+            except Exception as e:
+                QMessageBox.critical(self, "Hata", f"Dışa aktarma başarısız: {e}")
+
+    def _export_txt(self) -> None:
+        channels = self.channel_table.get_channels()
+        if not channels:
+            QMessageBox.warning(self, "SatSort", t("T145"))
+            return
+
+        is_tr = i18n.current_language == "Türkçe"
+        file_path, _ = QFileDialog.getSaveFileName(
+            self,
+            "Metin Dosyası Olarak Dışa Aktar" if is_tr else "Export to Text File",
+            "channels.txt",
+            "Text Files (*.txt);;All Files (*.*)",
+        )
+        if file_path:
+            try:
+                export_to_txt(channels, file_path)
+                self.status_bar.showMessage(f"Metin listesi başarıyla kaydedildi: {file_path}" if is_tr else f"Exported TXT: {file_path}", 4000)
+            except Exception as e:
+                QMessageBox.critical(self, "Hata", f"Dışa aktarma başarısız: {e}")
+
+    def _export_m3u(self) -> None:
+        channels = self.channel_table.get_channels()
+        if not channels:
+            QMessageBox.warning(self, "SatSort", t("T145"))
+            return
+
+        is_tr = i18n.current_language == "Türkçe"
+        file_path, _ = QFileDialog.getSaveFileName(
+            self,
+            "M3U Oynatma Listesi Olarak Dışa Aktar" if is_tr else "Export to M3U Playlist",
+            "channels.m3u",
+            "M3U Playlists (*.m3u *.m3u8);;All Files (*.*)",
+        )
+        if file_path:
+            try:
+                export_to_m3u(channels, file_path)
+                self.status_bar.showMessage(f"M3U listesi başarıyla kaydedildi: {file_path}" if is_tr else f"Exported M3U: {file_path}", 4000)
+            except Exception as e:
+                QMessageBox.critical(self, "Hata", f"Dışa aktarma başarısız: {e}")
+
     def _set_dirty(self, dirty: bool = True) -> None:
         self._is_dirty = dirty
         self._update_window_title()
@@ -877,6 +953,12 @@ class MainWindow(QMainWindow):
 
         self.act_save.setText(t("T102"))
         self.act_save.setToolTip(f"{t('T102')} (Ctrl+S)")
+
+        is_tr = i18n.current_language == "Türkçe"
+        self.menu_export.setTitle("📤 " + ("Dışa Aktar" if is_tr else "Export"))
+        self.act_export_csv.setText("📄 " + ("CSV Dosyası Olarak (.csv)..." if is_tr else "As CSV File (.csv)..."))
+        self.act_export_txt.setText("📝 " + ("Metin Dosyası Olarak (.txt)..." if is_tr else "As Text File (.txt)..."))
+        self.act_export_m3u.setText("📺 " + ("M3U Listesi Olarak (.m3u)..." if is_tr else "As M3U Playlist (.m3u)..."))
 
         self.act_close_list.setText(t("T127"))
         self.act_close_list.setToolTip(f"{t('T127')} (Ctrl+W)")
