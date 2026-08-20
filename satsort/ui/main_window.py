@@ -176,6 +176,12 @@ class MainWindow(QMainWindow):
         self.act_move_down.triggered.connect(self.channel_table.move_selected_down)
         self.menu_edit.addAction(self.act_move_down)
 
+        self.act_move_to = QAction("🎯 " + ("Numaraya Taşı..." if i18n.current_language == "Türkçe" else "Move to Slot #..."), self)
+        self.act_move_to.setShortcut(QKeySequence("Ctrl+M"))
+        self.act_move_to.setToolTip("🎯 " + ("Kanalı Numaraya Taşı (Ctrl+M)" if i18n.current_language == "Türkçe" else "Move Channel to Slot # (Ctrl+M)"))
+        self.act_move_to.triggered.connect(lambda: self._on_request_move(is_checked=False))
+        self.menu_edit.addAction(self.act_move_to)
+
         self.menu_edit.addSeparator()
 
         self.act_del_sel = QAction(_create_material_icon("delete", "#ef4444"), "Seçilenleri Sil" if i18n.current_language == "Türkçe" else "Delete Selected", self)
@@ -346,23 +352,28 @@ class MainWindow(QMainWindow):
             self.channel_table.update_channel_name_at(row, new_name)
             self._set_dirty(True)
 
-    def _on_request_move(self, is_checked: bool) -> None:
+    def _on_request_move(self, is_checked: bool = False) -> None:
         channels = self.channel_table.get_channels()
         if not channels:
             return
         total = len(channels)
 
         current_row = 0
+        channel_name = None
         if is_checked:
             checked_indices = self.channel_table.get_checked_row_indices()
             if checked_indices:
                 current_row = checked_indices[0]
+                channel_name = f"{len(checked_indices)} {t('T118')}"
         else:
             sel_indices = self.channel_table.get_selected_row_indices()
             if sel_indices:
                 current_row = sel_indices[0]
+                channel_name = channels[current_row].channel_name
 
-        dlg = MovePositionDialog(t("T113") if not is_checked else t("T114"), total, current_row + 1, self)
+        is_tr = i18n.current_language == "Türkçe"
+        dlg_title = "🎯 " + ("Kanalı Numaraya Taşı" if not is_checked else "İşaretli Kanalları Numaraya Taşı") if is_tr else ("🎯 Move Channel" if not is_checked else "🎯 Move Checked Channels")
+        dlg = MovePositionDialog(dlg_title, total, current_row + 1, channel_name, self)
         if dlg.exec():
             target_idx = dlg.get_target_index()
 
@@ -370,6 +381,7 @@ class MainWindow(QMainWindow):
                 self.channel_table.move_checked_channels(target_idx)
             else:
                 self.channel_table.move_channel(current_row, target_idx)
+                self.channel_table.selectRow(target_idx)
             self._set_dirty(True)
 
     def _open_import_dialog(self) -> None:
@@ -729,6 +741,9 @@ class MainWindow(QMainWindow):
 
         self.act_move_down.setText(t("T110"))
         self.act_move_down.setToolTip(f"{t('T110')} (Alt+Down)")
+
+        self.act_move_to.setText("🎯 " + ("Numaraya Taşı..." if i18n.current_language == "Türkçe" else "Move to Slot #..."))
+        self.act_move_to.setToolTip("🎯 " + ("Kanalı Numaraya Taşı (Ctrl+M)" if i18n.current_language == "Türkçe" else "Move Channel to Slot # (Ctrl+M)"))
 
         self.act_del_sel.setText(t("T111"))
         self.act_del_sel.setToolTip(f"{t('T111')} (Delete)")
