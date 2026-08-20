@@ -207,8 +207,14 @@ def format_channel_to_sdx_line(channel: Channel) -> str:
     """
     Formats a Channel object back into a SatcoDX fixed-width line string (exactly 132 chars).
     Uses existing raw_line with name update if available, or constructs a line from properties.
+    Preserves 100% byte fidelity if channel has not been modified.
     """
     if channel.raw_line and len(channel.raw_line) >= 127:
+        orig_name_p1 = channel.raw_line[43:51]
+        orig_name_p2 = channel.raw_line[115:132]
+        orig_clean_name = (orig_name_p1 + orig_name_p2).replace("\x00", "").replace("\x05", "").strip()
+        if channel.channel_name.strip() == orig_clean_name:
+            return channel.raw_line[:132]
         return rename_channel_in_line(channel.raw_line, channel.channel_name)
 
     # Build line from scratch if raw_line is not available (SatcoDX 105 specification, 132 chars)
@@ -301,19 +307,31 @@ def validate_channel_name(name: str) -> tuple[bool, str]:
     return True, ""
 
 
-def write_sdx_file(file_path: str, channels: List[Channel], encoding: str = "cp1254") -> None:
+def write_sdx_file(
+    file_path: str,
+    channels: List[Channel],
+    encoding: str = "cp1254",
+    line_ending: str = "\n",
+) -> None:
     """
-    Writes a list of Channel objects to a .sdx file with standard CRLF line breaks
-    and the required trailing null byte (\\x00).
+    Writes a list of Channel objects to a .sdx file conforming strictly to the
+    hardware SatcoDX 105 specification:
+    - Fixed 132-character records per channel line.
+    - Standard LF (\\n) line endings (133 bytes per row) for satellite/TV ROM drivers.
+    - Fixed 133-byte trailer padding block (\\x00 followed by 132 spaces) at the end of the file.
+    - Turkish character preservation using CP1254 encoding.
     """
-    lines: List[str] = []
+    delimiter = line_ending.encode("ascii")
+    formatted_lines: List[bytes] = []
     for ch in channels:
-        line_str = format_channel_to_sdx_line(ch)
-        lines.append(line_str)
+        line_str = format_channel_to_sdx_line(ch).ljust(132)[:132]
+        formatted_lines.append(line_str.encode(encoding, errors="replace"))
 
-    # Use binary write to ensure exact CRLF and terminating null byte
+    trailer_block = b"\x00" + b" " * 132
+
     with open(file_path, "wb") as f:
-        for line in lines:
-            f.write(line.encode(encoding, errors="replace") + b"\r\n")
-        f.write(b"\x00")
+        if formatted_lines:
+            f.write(delimiter.join(formatted_lines))
+            f.write(delimiter)
+        f.write(trailer_block)
 

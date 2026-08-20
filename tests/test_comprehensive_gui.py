@@ -185,10 +185,10 @@ class TestComprehensiveSatSort(unittest.TestCase):
         try:
             write_sdx_file(tmp_path, self.initial_channels)
 
-            # Check file ends with \0
+            # Check file ends with 133-byte trailer block starting with null byte
             with open(tmp_path, "rb") as f:
                 content = f.read()
-                self.assertTrue(content.endswith(b"\x00"), "SDX file must terminate with null byte")
+                self.assertTrue(content.endswith(b"\x00" + b" " * 132), "SDX file must terminate with 133-byte trailer block starting with null byte")
 
             loaded = read_sdx_file(tmp_path)
             self.assertEqual(len(loaded), 5)

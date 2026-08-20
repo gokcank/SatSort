@@ -133,10 +133,10 @@ class TestSatcoDxParser(unittest.TestCase):
         try:
             write_sdx_file(tmp_path, [ch1, ch2, ch3])
 
-            # Check that file ends with null byte
+            # Check that file ends with 133-byte trailer block starting with null byte
             with open(tmp_path, "rb") as f:
                 content = f.read()
-                self.assertTrue(content.endswith(b"\x00"))
+                self.assertTrue(content.endswith(b"\x00" + b" " * 132))
 
             # Read back and verify all channels
             loaded_channels = read_sdx_file(tmp_path)
