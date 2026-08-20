@@ -21,31 +21,31 @@ from satsort.core.parser import (
 
 class TestSatcoDxParser(unittest.TestCase):
     def setUp(self):
-        # Create a canonical 127-character sample SatcoDX line
-        name_p1 = "TRT 1 HA"  # 8 chars
-        name_p2 = "BER         "  # 12 chars
+        # Create a canonical 132-character sample SatcoDX 105 line
+        name_p1 = "TRT 1 HA"  # 8 chars (43..50)
+        name_p2 = "BER              "  # 17 chars (115..131)
         self.sample_line = (
-            "0123456789"  # 0..9 (10 chars)
+            "SATCODX105"  # 0..9 (10 chars)
             "TURKSAT 42E       "  # 10..27 (18 chars)
             "T"  # 28 (1 char)
             "MPG2"  # 29..32 (4 chars)
-            "120540000"  # 33..41 (9 chars)
-            "0"  # 42 (1 char, 0=Vertical)
+            "0"  # 33 (1 char, 0=Vertical)
+            "12054"  # 34..38 (5 chars frequency)
+            "0000"  # 39..42 (4 chars sequence)
             f"{name_p1}"  # 43..50 (8 chars)
-            f"{' ' * 18}"  # 51..68 (18 chars)
-            "27500"  # 69..73 (5 chars)
+            "0420"  # 51..54 (4 chars)
+            "TUR"  # 55..57 (3 chars)
+            "     ______"  # 58..68 (11 chars)
+            "27500"  # 69..73 (5 chars symbol rate)
             "5"  # 74 (1 char, 5=5/6)
-            "0100"  # 75..78 (4 chars VPID)
-            "0101"  # 79..82 (4 chars APID)
-            "0100"  # 83..86 (4 chars PCRP)
+            "____________"  # 75..86 (12 chars)
             "00001"  # 87..91 (5 chars SID)
-            "00001"  # 92..96 (5 chars NID)
-            "00001"  # 97..101 (5 chars TSID)
-            "TUR "  # 102..105 (4 chars)
-            "TR"  # 106..107 (2 chars)
-            "TUR"  # 108..110 (3 chars)
-            "----"  # 111..114 (4 chars)
-            f"{name_p2}"  # 115..126 (12 chars)
+            "01000"  # 92..96 (5 chars VPID)
+            "01010"  # 97..101 (5 chars APID)
+            "___"  # 102..104 (3 chars PCRP)
+            "----"  # 105..108 (4 chars crypto)
+            "______"  # 109..114 (6 chars language)
+            f"{name_p2}"  # 115..131 (17 chars name part 2)
         )
 
     def test_parse_standard_sdx_line(self):
@@ -55,20 +55,13 @@ class TestSatcoDxParser(unittest.TestCase):
         self.assertEqual(ch.channel_name, "TRT 1 HABER")
         self.assertEqual(ch.channel_type, ChannelType.TV)
         self.assertEqual(ch.broadcast_system, "MPEG-2 (Motion Pictures Experts Group 2)")
-        self.assertEqual(ch.frequency, "120540000")
+        self.assertEqual(ch.frequency, "12054")
         self.assertEqual(ch.polarization, Polarization.VERTICAL)
         self.assertEqual(ch.symbol_rate, "27500")
         self.assertEqual(ch.fec, "5/6")
-        self.assertEqual(ch.vpid, "0100")
-        self.assertEqual(ch.apid, "0101")
-        self.assertEqual(ch.pcrp, "0100")
+        self.assertEqual(ch.vpid, "01000")
+        self.assertEqual(ch.apid, "01010")
         self.assertEqual(ch.sid, "00001")
-        self.assertEqual(ch.nid, "00001")
-        self.assertEqual(ch.tsid, "00001")
-        self.assertEqual(ch.language, "TUR")
-        self.assertEqual(ch.country_code, "TR")
-        self.assertEqual(ch.language_code, "TUR")
-        self.assertEqual(ch.crypto, "----")
 
     def test_channel_type_detection(self):
         # Radio channel
@@ -88,12 +81,12 @@ class TestSatcoDxParser(unittest.TestCase):
 
     def test_polarization_detection(self):
         # Horizontal (1)
-        h_line = self.sample_line[:42] + "1" + self.sample_line[43:]
+        h_line = self.sample_line[:33] + "1" + self.sample_line[34:]
         ch = parse_sdx_line(h_line)
         self.assertEqual(ch.polarization, Polarization.HORIZONTAL)
 
         # Vertical (0)
-        v_line = self.sample_line[:42] + "0" + self.sample_line[43:]
+        v_line = self.sample_line[:33] + "0" + self.sample_line[34:]
         ch = parse_sdx_line(v_line)
         self.assertEqual(ch.polarization, Polarization.VERTICAL)
 

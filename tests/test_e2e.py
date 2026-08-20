@@ -63,7 +63,7 @@ class TestSatSortE2E(unittest.TestCase):
         new_line = rename_channel_in_line(self.raw_lines[0], "HABERTURK HD")
         parsed = parse_sdx_line(new_line)
         self.assertEqual(parsed.channel_name, "HABERTURK HD")
-        self.assertEqual(parsed.frequency, "120540000")
+        self.assertEqual(parsed.frequency, "12054")
         self.assertEqual(parsed.polarization, Polarization.VERTICAL)
 
     def test_file_diff_comparison_logic(self):

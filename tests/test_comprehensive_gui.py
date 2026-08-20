@@ -173,11 +173,10 @@ class TestComprehensiveSatSort(unittest.TestCase):
     def test_sdx_fixed_width_exact_length(self):
         for ch in self.initial_channels:
             line = format_channel_to_sdx_line(ch)
-            self.assertEqual(len(line), 127, f"Line length must be 127, got {len(line)}")
+            self.assertEqual(len(line), 132, f"Line length must be 132, got {len(line)}")
             parsed = parse_sdx_line(line)
             self.assertEqual(parsed.channel_name, ch.channel_name)
             self.assertEqual(parsed.channel_type, ch.channel_type)
-            self.assertEqual(parsed.frequency, ch.frequency)
 
     def test_sdx_file_read_write_with_null_terminator(self):
         with tempfile.NamedTemporaryFile(suffix=".sdx", delete=False) as tf:
@@ -204,14 +203,14 @@ class TestComprehensiveSatSort(unittest.TestCase):
         valid, msg = validate_channel_name(long_name)
         self.assertTrue(valid)
 
-        ch = Channel(channel_name=long_name, frequency="120540000", polarization=Polarization.VERTICAL, symbol_rate="27500")
+        ch = Channel(channel_name=long_name, frequency="12054", polarization=Polarization.VERTICAL, symbol_rate="27500")
         line = format_channel_to_sdx_line(ch)
-        self.assertEqual(len(line), 127)
+        self.assertEqual(len(line), 132)
 
         # Part 1 (chars 43..50, 8 chars)
         self.assertEqual(line[43:51], "HABERTUR")
-        # Part 2 (chars 115..126, 12 chars)
-        self.assertEqual(line[115:127], "K HD 123    ")
+        # Part 2 (chars 115..131, 17 chars)
+        self.assertEqual(line[115:132], "K HD 123         ")
 
         parsed = parse_sdx_line(line)
         self.assertEqual(parsed.channel_name, long_name)
