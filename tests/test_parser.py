@@ -153,6 +153,76 @@ class TestSatcoDxParser(unittest.TestCase):
         self.assertIsNone(parse_sdx_line("   "))
         self.assertIsNone(parse_sdx_line("SHORT"))
 
+    def test_hardware_accurate_byte_preservation_roundtrip(self):
+        orig_path = "/home/gokcank/Desktop/Orijinal Liste.sdx"
+        if not os.path.exists(orig_path):
+            return
+
+        with open(orig_path, "rb") as f:
+            original_bytes = f.read()
+
+        channels = read_sdx_file(orig_path)
+        self.assertEqual(len(channels), 583)
+
+        with tempfile.NamedTemporaryFile(suffix=".sdx", delete=False) as tmp_file:
+            tmp_path = tmp_file.name
+
+        try:
+            write_sdx_file(tmp_path, channels)
+            with open(tmp_path, "rb") as f:
+                saved_bytes = f.read()
+
+            self.assertEqual(len(saved_bytes), 77672)
+            self.assertEqual(saved_bytes, original_bytes, "Output SDX file must match original hardware file byte-for-byte")
+
+            # Test reordering channels
+            reordered = list(channels)
+            reordered[0], reordered[1] = reordered[1], reordered[0]
+            write_sdx_file(tmp_path, reordered)
+
+            with open(tmp_path, "rb") as f:
+                reordered_bytes = f.read()
+
+            self.assertEqual(len(reordered_bytes), 77672)
+            reloaded = read_sdx_file(tmp_path)
+            self.assertEqual(len(reloaded), 583)
+            self.assertEqual(reloaded[0].channel_name, channels[1].channel_name)
+            self.assertEqual(reloaded[1].channel_name, channels[0].channel_name)
+        finally:
+            if os.path.exists(tmp_path):
+                os.remove(tmp_path)
+
+    def test_synthetic_channel_list_exact_sizing(self):
+        # 10 channels -> 10 lines of 133 bytes + 1 trailer of 133 bytes = 1463 bytes
+        channels = [
+            Channel(
+                satellite_name="Turksat (42.0E)",
+                channel_name=f"KANAL {i+1} HD",
+                channel_type=ChannelType.TV,
+                broadcast_system="MPG4",
+                frequency="12015",
+                polarization=Polarization.VERTICAL,
+                symbol_rate="27500",
+                fec="3/4"
+            )
+            for i in range(10)
+        ]
+
+        with tempfile.NamedTemporaryFile(suffix=".sdx", delete=False) as tmp_file:
+            tmp_path = tmp_file.name
+
+        try:
+            write_sdx_file(tmp_path, channels)
+            with open(tmp_path, "rb") as f:
+                data = f.read()
+
+            expected_size = 10 * 133 + 133
+            self.assertEqual(len(data), expected_size)
+            self.assertTrue(data.endswith(b"\x00" + b" " * 132))
+        finally:
+            if os.path.exists(tmp_path):
+                os.remove(tmp_path)
+
 
 if __name__ == "__main__":
     unittest.main()
