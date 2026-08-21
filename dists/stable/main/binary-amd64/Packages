@@ -6,9 +6,9 @@ Installed-Size: 80000
 Depends: libc6
 Section: video
 Priority: optional
-Filename: pool/main/s/satsort/satsort_1.0.0_amd64.deb
-Size: 76005538
-SHA256: 851424f056b25a1fed4ef02895f593ecac0903667030901e1f18f702fbe46c16
-SHA1: 7e2fa5e0dfd916ca063642bd617937ed7511fc20
-MD5sum: 8a032853b72b6b20ca8155d09c5268eb
+Filename: pool/main/s/satsort/satsort_1.0.1_amd64.deb
+Size: 76008922
+SHA256: 4a662cbe07556b60ebb1d71db8b8be22f87b6415fb0bc01b95613597ea50d6a9
+SHA1: 100c9f58b5159b0dc693acd6bd83454a0f0cc4cd
+MD5sum: 43a0013a8343d8323b7c300360a77573
 Description: Modern Linux Native SatcoDX Channel List Editor
