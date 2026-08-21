@@ -248,7 +248,7 @@ SHA256:
         Depoyu sisteminize ekleyerek SatSort'u tek komutla kurabilir ve otomatik güncellemeleri alabilirsiniz:
       </p>
       <pre><code># 1. SatSort APT deposunu ekleyin
-echo "deb [trusted=yes] https://gokcank.github.io/SatSort stable main" | sudo tee /etc/apt/sources.list.d/satsort.list
+echo "deb [arch=amd64 trusted=yes] https://gokcank.github.io/SatSort stable main" | sudo tee /etc/apt/sources.list.d/satsort.list
 
 # 2. Paket listesini güncelleyip kurun
 sudo apt update

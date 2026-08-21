@@ -40,7 +40,7 @@ En kolay yöntemdir. SatSort'u tek komutla kurabilir ve sistem güncellemeleriyl
 
 ```bash
 # 1. SatSort APT deposunu ekleyin
-echo "deb [trusted=yes] https://gokcank.github.io/SatSort stable main" | sudo tee /etc/apt/sources.list.d/satsort.list
+echo "deb [arch=amd64 trusted=yes] https://gokcank.github.io/SatSort stable main" | sudo tee /etc/apt/sources.list.d/satsort.list
 
 # 2. Paket listesini güncelleyip SatSort'u kurun
 sudo apt update
