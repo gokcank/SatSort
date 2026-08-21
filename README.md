@@ -35,9 +35,21 @@
 
 ## 📦 İndirme ve Kurulum
 
-GitHub Releases sayfasından sisteminize uygun paketi indirin:
+### 🌟 1. APT Deposu ile Kurulum (Ubuntu / Debian / Pardus / Linux Mint)
+En kolay yöntemdir. SatSort'u tek komutla kurabilir ve sistem güncellemeleriyle (`sudo apt upgrade`) otomatik olarak yeni sürümleri alabilirsiniz:
 
-### 🌟 1. Evrensel Linux Paketi: AppImage (Önerilen)
+```bash
+# 1. SatSort APT deposunu ekleyin
+echo "deb [trusted=yes] https://gokcank.github.io/SatSort stable main" | sudo tee /etc/apt/sources.list.d/satsort.list
+
+# 2. Paket listesini güncelleyip SatSort'u kurun
+sudo apt update
+sudo apt install satsort
+```
+
+---
+
+### 🚀 2. Evrensel Linux Paketi: AppImage (Kurulumsuz)
 Hiçbir kurulum veya ek kütüphane gerektirmez. Ubuntu, Debian, Fedora, Arch, Manjaro, Linux Mint vb. tüm dağıtımlarda çalışır:
 ```bash
 # Çalıştırma izni verip doğrudan açın
@@ -45,13 +57,12 @@ chmod +x SatSort-1.0.0-x86_64.AppImage
 ./SatSort-1.0.0-x86_64.AppImage
 ```
 
-### 🐧 2. Debian / Ubuntu Kurulum Paketi (`.deb`)
-Sisteme ve uygulama menüsüne entegre kurmak için:
+### 🐧 3. Doğrudan `.deb` Paketi İndirip Kurma
 ```bash
 sudo dpkg -i satsort_1.0.0_amd64.deb
 ```
 
-### ⚡ 3. Taşınabilir Tek Dosya Binary
+### ⚡ 4. Taşınabilir Tek Dosya Binary
 ```bash
 chmod +x satsort-linux-x86_64
 ./satsort-linux-x86_64
