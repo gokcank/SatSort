@@ -1,0 +1,15 @@
+Origin: SatSort Repository
+Label: SatSort
+Suite: stable
+Codename: stable
+Version: 1.0
+Architectures: amd64
+Components: main
+Description: Official APT Repository for SatSort Channel Editor
+Date: Fri, 21 Aug 2026 02:05:44 UTC
+MD5Sum:
+ 411df9b73291532a7691cedeff1d1d15 463 main/binary-amd64/Packages
+ 9acd5a8a706b8b9aaf64a77db50f5726 373 main/binary-amd64/Packages.gz
+SHA256:
+ b2c7b6fd49800aadce553fc5805498bb6ad49e106c58ffb77d9ebc8937f2a04e 463 main/binary-amd64/Packages
+ 6c36210dda8506d7e5440e3efd4d37dd8b80555916bc7937bae432be0d534ff1 373 main/binary-amd64/Packages.gz

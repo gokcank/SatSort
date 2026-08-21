@@ -1,0 +1,14 @@
+Package: satsort
+Version: 1.0.0
+Architecture: amd64
+Maintainer: Gökcan <https://github.com/gokcank>
+Installed-Size: 80000
+Depends: libc6
+Section: video
+Priority: optional
+Filename: pool/main/s/satsort/satsort_1.0.0_amd64.deb
+Size: 76005538
+SHA256: 851424f056b25a1fed4ef02895f593ecac0903667030901e1f18f702fbe46c16
+SHA1: 7e2fa5e0dfd916ca063642bd617937ed7511fc20
+MD5sum: 8a032853b72b6b20ca8155d09c5268eb
+Description: Modern Linux Native SatcoDX Channel List Editor
