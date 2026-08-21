@@ -30,7 +30,7 @@ jobs:
           sudo apt-get install -y --no-install-recommends -o Acquire::Retries=3 -o Acquire::http::Timeout="20" \
             xvfb libxkbcommon-x11-0 libegl1 libgl1 libxcb-cursor0 libxcb-icccm4 libxcb-image0 \
             libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-shape0 libxcb-sync1 \
-            libxcb-xfixes0 libxcb-xinerama0 libxcb-xkb1 wget file desktop-file-utils
+            libxcb-xfixes0 libxcb-xinerama0 libxcb-xkb1 wget file desktop-file-utils dpkg-dev
 
       - name: Install Python dependencies & PyInstaller
         run: |
@@ -109,6 +109,20 @@ jobs:
         run: |
           cp dist/satsort release_output/satsort-linux-x86_64
           chmod +x release_output/satsort-linux-x86_64
+
+      - name: Build Static APT Repository
+        run: |
+          python3 scripts/build_apt_repo.py release_output apt_repo_out
+
+      - name: Deploy APT Repository to GitHub Pages (gh-pages)
+        uses: peaceiris/actions-gh-pages@v4
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./apt_repo_out
+          publish_branch: gh-pages
+          keep_files: false
+          commit_message: "deploy: publish APT repository for ${{ github.ref_name }}"
 
       - name: List Release Deliverables
         run: |
