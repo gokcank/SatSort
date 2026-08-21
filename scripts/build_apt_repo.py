@@ -277,6 +277,10 @@ sudo apt install satsort</code></pre>
     with open(os.path.join(output_repo_dir, "index.html"), "w", encoding="utf-8") as f:
         f.write(html_content)
 
+    # Touch .nojekyll to prevent Jekyll from filtering files
+    with open(os.path.join(output_repo_dir, ".nojekyll"), "w") as f:
+        pass
+
     print("✅ APT deposu ve karşılama sayfası başarıyla oluşturuldu!")
 
 
