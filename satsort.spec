@@ -10,6 +10,7 @@ import os
 block_cipher = None
 
 added_files = [
+    ('satsort/i18n/translations.json', 'satsort/i18n'),
     ('assets', 'assets'),
     ('satsort.desktop', '.'),
     ('satsort-mime.xml', '.'),

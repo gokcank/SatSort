@@ -5,6 +5,7 @@ SatSort - Internationalization (i18n) Manager
 from __future__ import annotations
 import json
 import os
+import sys
 from pathlib import Path
 from typing import Callable, Dict, List, Optional
 
@@ -24,12 +25,23 @@ class I18nManager:
 
     def _load_translations(self) -> None:
         """Loads translations from the bundled translations.json file."""
-        json_path = Path(__file__).parent / "translations.json"
-        try:
-            with open(json_path, "r", encoding="utf-8") as f:
-                self._translations = json.load(f)
-        except Exception:
-            self._translations = {}
+        possible_paths = [
+            Path(__file__).parent / "translations.json",
+            Path(getattr(sys, "_MEIPASS", "")) / "satsort" / "i18n" / "translations.json",
+            Path(getattr(sys, "_MEIPASS", "")) / "translations.json",
+            Path("/usr/share/satsort/translations.json"),
+        ]
+        for p in possible_paths:
+            if p and p.is_file():
+                try:
+                    with open(p, "r", encoding="utf-8") as f:
+                        data = json.load(f)
+                        if data:
+                            self._translations = data
+                            return
+                except Exception:
+                    pass
+        self._translations = {}
 
     def _load_user_preference(self) -> None:
         """Loads user language preference from ~/.config/satsort/config.json if available."""

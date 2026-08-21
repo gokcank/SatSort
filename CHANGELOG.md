@@ -3,6 +3,13 @@
 Bu projedeki tüm önemli değişiklikler bu dosyada kronolojik olarak listelenmektedir.
 Format, [Keep a Changelog](https://keepachangelog.com/tr/1.0.0/) standartlarına ve [Semantic Versioning](https://semver.org/lang/tr/) kurallarına dayanmaktadır.
 
+## [v1.0.1] - 2026-08-21
+
+### 🐛 Hata Düzeltmeleri ve İyileştirmeler (Bug Fixes & Improvements)
+
+* **🌐 Dil Dosyası (i18n) Paketleme Düzeltmesi:** Bağımsız binary ve `.deb` paketlerinde çeviri JSON dosyasının yüklenmesini engelleyen paketleme yolu sorunu çözüldü (`T100`, `T101` etiketleri yerine Türkçe ve seçilen dil metinleri yüklenecek şekilde düzeltildi).
+* **📦 APT Deposu Desteği:** Debian, Ubuntu, Pardus ve Linux Mint için GitHub Pages tabanlı resmi APT deposu kuruldu (`deb [arch=amd64 trusted=yes] https://gokcank.github.io/SatSort stable main`).
+
 ---
 
 ## [v1.0.0] - 2026-08-21

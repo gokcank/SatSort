@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "satsort"
-version = "1.0.0"
+version = "1.0.1"
 description = "Modern Linux Native SatcoDX Channel List Editor"
 readme = "README.md"
 authors = [
@@ -37,6 +37,10 @@ Issues = "https://github.com/gokcank/SatSort/issues"
 
 [project.scripts]
 satsort = "main:main"
+
+[tool.setuptools.package-data]
+"*" = ["*.json", "*.svg", "*.xml", "*.desktop"]
+
 
 [tool.setuptools.packages.find]
 where = ["."]

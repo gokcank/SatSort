@@ -103,7 +103,11 @@ jobs:
           chmod +x AppDir/AppRun
           
           mkdir -p release_output
-          ARCH=x86_64 ./squashfs-root/AppRun AppDir release_output/SatSort-1.0.0-x86_64.AppImage
+          VER="${TAG_NAME:-1.0.1}"
+          VER="${VER#v}"
+          ARCH=x86_64 ./squashfs-root/AppRun AppDir "release_output/SatSort-${VER}-x86_64.AppImage"
+        env:
+          TAG_NAME: ${{ github.ref_name }}
 
       - name: Prepare Standalone Binary Deliverable
         run: |
@@ -137,6 +141,6 @@ jobs:
           draft: false
           prerelease: false
           files: |
-            release_output/SatSort-1.0.0-x86_64.AppImage
-            release_output/satsort_1.0.0_amd64.deb
+            release_output/*.AppImage
+            release_output/*.deb
             release_output/satsort-linux-x86_64

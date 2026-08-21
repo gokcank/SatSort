@@ -53,13 +53,13 @@ sudo apt install satsort
 Hiçbir kurulum veya ek kütüphane gerektirmez. Ubuntu, Debian, Fedora, Arch, Manjaro, Linux Mint vb. tüm dağıtımlarda çalışır:
 ```bash
 # Çalıştırma izni verip doğrudan açın
-chmod +x SatSort-1.0.0-x86_64.AppImage
-./SatSort-1.0.0-x86_64.AppImage
+chmod +x SatSort-1.0.1-x86_64.AppImage
+./SatSort-1.0.1-x86_64.AppImage
 ```
 
 ### 🐧 3. Doğrudan `.deb` Paketi İndirip Kurma
 ```bash
-sudo dpkg -i satsort_1.0.0_amd64.deb
+sudo dpkg -i satsort_1.0.1_amd64.deb
 ```
 
 ### ⚡ 4. Taşınabilir Tek Dosya Binary

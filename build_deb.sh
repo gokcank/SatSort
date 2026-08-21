@@ -2,7 +2,8 @@
 # SatSort - Debian / Ubuntu (.deb) Package Builder
 set -e
 
-VERSION="1.0.0"
+VERSION="${TAG_NAME:-1.0.1}"
+VERSION="${VERSION#v}"
 ARCH="amd64"
 PKG_NAME="satsort_${VERSION}_${ARCH}"
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"

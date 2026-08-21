@@ -2,7 +2,8 @@
 # SatSort - Universal Linux AppImage Builder
 set -e
 
-VERSION="1.0.0"
+VERSION="${TAG_NAME:-1.0.1}"
+VERSION="${VERSION#v}"
 APP_NAME="SatSort"
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 APP_DIR="$ROOT_DIR/AppDir"
