@@ -41,9 +41,7 @@ htmlcov/
 NovaSatcoDx_SourceCode*/
 NovaSatcoDx_SourceCode.
 
-# User Files and Logs
-fazli_implementation_plan.md
-konusma_gecmisi.md
-onceki_walkthrough.md
-transcript.jsonl
-sample_turksat.sdx
+# User Notes & Scratch Files
+scratch_list.md
+scratch*.md
+*.bak
