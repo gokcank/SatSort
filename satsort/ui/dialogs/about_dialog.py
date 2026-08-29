@@ -15,6 +15,7 @@ from PySide6.QtWidgets import (
 )
 
 from ...i18n import t, i18n
+from ... import __version__
 
 
 class AboutDialog(QDialog):
@@ -42,7 +43,7 @@ class AboutDialog(QDialog):
         title_lbl.setStyleSheet("font-size: 22px; font-weight: bold; color: #60a5fa;")
         title_layout.addWidget(title_lbl)
 
-        ver_lbl = QLabel("v1.0.0 — Linux Native SatcoDX Editor")
+        ver_lbl = QLabel(f"v{__version__} — Linux Native SatcoDX Editor")
         ver_lbl.setStyleSheet("color: #94a3b8; font-size: 13px;")
         title_layout.addWidget(ver_lbl)
         header_layout.addLayout(title_layout)
