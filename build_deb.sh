@@ -2,11 +2,11 @@
 # SatSort - Debian / Ubuntu (.deb) Package Builder
 set -e
 
-VERSION="${TAG_NAME:-1.0.1}"
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+VERSION="${TAG_NAME:-$(python3 -c "import sys; sys.path.insert(0, '$ROOT_DIR'); import satsort; print(satsort.__version__)")}"
 VERSION="${VERSION#v}"
 ARCH="amd64"
 PKG_NAME="satsort_${VERSION}_${ARCH}"
-ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BUILD_TMP="$ROOT_DIR/build_deb_tmp"
 OUT_DIR="$ROOT_DIR/release_output"
 

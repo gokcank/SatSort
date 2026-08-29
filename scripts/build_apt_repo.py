@@ -24,7 +24,7 @@ def calculate_hash(file_path: str, algo: str) -> str:
 
 def extract_deb_control(deb_path: str) -> dict:
     res = subprocess.run(
-        ["dpkg-deb", "-I", deb_path],
+        ["dpkg-deb", "-f", deb_path],
         capture_output=True,
         text=True,
         check=True,
@@ -32,7 +32,7 @@ def extract_deb_control(deb_path: str) -> dict:
     info = {}
     current_key = None
     for line in res.stdout.splitlines():
-        if line.startswith(" ") and current_key:
+        if (line.startswith(" ") or line.startswith("\t")) and current_key:
             info[current_key] += "\n" + line.strip()
         elif ":" in line:
             parts = line.split(":", 1)
@@ -68,10 +68,17 @@ def build_repo(deb_dir: str, output_repo_dir: str):
         sha256 = calculate_hash(src_deb, "sha256")
         sha1 = calculate_hash(src_deb, "sha1")
         md5 = calculate_hash(src_deb, "md5")
+
+        # Extract version with filename fallback if needed
+        deb_ver = control.get('Version')
+        if not deb_ver and '_' in deb_name:
+            deb_ver = deb_name.split('_')[1]
+        if not deb_ver:
+            deb_ver = '1.1.0'
         
         entry_lines = [
             f"Package: {control.get('Package', 'satsort')}",
-            f"Version: {control.get('Version', '1.0.0')}",
+            f"Version: {deb_ver}",
             f"Architecture: {control.get('Architecture', 'amd64')}",
             f"Maintainer: {control.get('Maintainer', 'Gökcan <https://github.com/gokcank>')}",
             f"Installed-Size: {control.get('Installed-Size', '80000')}",

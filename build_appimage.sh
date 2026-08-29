@@ -2,10 +2,10 @@
 # SatSort - Universal Linux AppImage Builder
 set -e
 
-VERSION="${TAG_NAME:-1.0.1}"
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+VERSION="${TAG_NAME:-$(python3 -c "import sys; sys.path.insert(0, '$ROOT_DIR'); import satsort; print(satsort.__version__)")}"
 VERSION="${VERSION#v}"
 APP_NAME="SatSort"
-ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 APP_DIR="$ROOT_DIR/AppDir"
 OUT_DIR="$ROOT_DIR/release_output"
 APPIMAGE_TOOL="$ROOT_DIR/appimagetool-x86_64.AppImage"

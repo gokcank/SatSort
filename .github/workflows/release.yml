@@ -72,6 +72,8 @@ jobs:
         run: |
           chmod +x build_deb.sh
           ./build_deb.sh
+        env:
+          TAG_NAME: ${{ github.ref_name }}
 
       - name: Build AppImage Package
         run: |
