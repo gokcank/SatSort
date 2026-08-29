@@ -91,6 +91,10 @@ class AboutDialog(QDialog):
         btn_issue.clicked.connect(lambda: QDesktopServices.openUrl(QUrl("https://github.com/gokcank/SatSort/issues/new")))
         btn_layout.addWidget(btn_issue)
 
+        btn_update = QPushButton("🔄 " + ("Güncellemeleri Denetle" if is_tr else "Check for Updates"))
+        btn_update.clicked.connect(self._check_updates)
+        btn_layout.addWidget(btn_update)
+
         btn_layout.addStretch()
 
         btn_close = QPushButton(t("T107"))  # Kapat
@@ -98,3 +102,7 @@ class AboutDialog(QDialog):
         btn_layout.addWidget(btn_close)
 
         layout.addLayout(btn_layout)
+
+    def _check_updates(self) -> None:
+        from .update_dialog import UpdateDialog
+        UpdateDialog(self).exec()

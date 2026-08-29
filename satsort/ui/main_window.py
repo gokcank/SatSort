@@ -354,6 +354,12 @@ class MainWindow(QMainWindow):
         self.act_github_repo.triggered.connect(lambda: QDesktopServices.openUrl(QUrl("https://github.com/gokcank/SatSort")))
         self.menu_help.addAction(self.act_github_repo)
 
+        self.menu_help.addSeparator()
+
+        self.act_check_updates = QAction("🔄 " + ("Güncellemeleri Denetle..." if i18n.current_language == "Türkçe" else "Check for Updates..."), self)
+        self.act_check_updates.triggered.connect(self._check_for_updates)
+        self.menu_help.addAction(self.act_check_updates)
+
         # Top Toolbar
         self.toolbar = QToolBar("Main Toolbar")
         self.toolbar.setIconSize(QSize(20, 20))
@@ -1021,6 +1027,10 @@ class MainWindow(QMainWindow):
     def show_about(self) -> None:
         AboutDialog(self).exec()
 
+    def _check_for_updates(self) -> None:
+        from .dialogs.update_dialog import UpdateDialog
+        UpdateDialog(self).exec()
+
     def _open_shortcuts_dialog(self) -> None:
         ShortcutsDialog(self).exec()
 
@@ -1108,6 +1118,7 @@ class MainWindow(QMainWindow):
 
         self.act_report_issue.setText("🐛 " + ("Hata Bildir / Geri Bildirim" if i18n.current_language == "Türkçe" else "Report Issue / Feedback"))
         self.act_github_repo.setText("⭐ " + ("GitHub Deposu" if i18n.current_language == "Türkçe" else "GitHub Repository"))
+        self.act_check_updates.setText("🔄 " + ("Güncellemeleri Denetle..." if is_tr else "Check for Updates..."))
 
         # Subcomponents
         self._rebuild_language_menu()
