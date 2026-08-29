@@ -271,6 +271,97 @@ QGroupBox::title {
     padding: 0 6px;
     background-color: #1a1d24;
 }
+
+/* Sidebar Parameter Labels */
+QLabel#param_title {
+    color: #94a3b8;
+    font-size: 12px;
+}
+QLabel#param_value {
+    color: #f1f5f9;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+/* Transponder Channel List */
+QListWidget#transponder_list {
+    background-color: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 6px;
+    padding: 4px;
+}
+QListWidget#transponder_list::item {
+    padding: 5px 8px;
+    border-radius: 4px;
+    color: #e2e8f0;
+}
+QListWidget#transponder_list::item:selected {
+    background-color: #1e3a8a;
+    color: #ffffff;
+}
+QListWidget#transponder_list::item:hover {
+    background-color: #1e293b;
+}
+
+/* Search Bar Components */
+QLineEdit#search_input {
+    background-color: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 6px;
+    padding: 6px 12px;
+    color: #f8fafc;
+    font-size: 13px;
+}
+QLineEdit#search_input:focus {
+    border-color: #3b82f6;
+}
+QPushButton#search_nav_btn {
+    background-color: #1e293b;
+    color: #e2e8f0;
+    border: 1px solid #334155;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    text-align: center;
+}
+QPushButton#search_nav_btn:hover:enabled {
+    background-color: #334155;
+    color: #38bdf8;
+    border-color: #0284c7;
+}
+QPushButton#search_nav_btn:disabled {
+    color: #475569;
+    background-color: #0f172a;
+    border-color: #1e293b;
+}
+QPushButton#search_mark_btn {
+    background-color: #1e293b;
+    color: #e2e8f0;
+    border: 1px solid #334155;
+    border-radius: 4px;
+    font-size: 13px;
+    font-weight: bold;
+    text-align: center;
+}
+QPushButton#search_mark_btn:hover:enabled {
+    background-color: #164e63;
+    color: #38bdf8;
+    border-color: #0891b2;
+}
+QPushButton#search_mark_btn:disabled {
+    color: #475569;
+    background-color: #0f172a;
+    border-color: #1e293b;
+}
+QLabel#search_count_badge {
+    background-color: #1e293b;
+    color: #94a3b8;
+    border: 1px solid #334155;
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-size: 12px;
+    font-weight: 500;
+}
 """
 
 LIGHT_THEME_QSS = """
@@ -534,6 +625,97 @@ QGroupBox::title {
     left: 12px;
     padding: 0 6px;
     background-color: #f8fafc;
+}
+
+/* Sidebar Parameter Labels */
+QLabel#param_title {
+    color: #475569;
+    font-size: 12px;
+}
+QLabel#param_value {
+    color: #0f172a;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+/* Transponder Channel List */
+QListWidget#transponder_list {
+    background-color: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    padding: 4px;
+}
+QListWidget#transponder_list::item {
+    padding: 5px 8px;
+    border-radius: 4px;
+    color: #0f172a;
+}
+QListWidget#transponder_list::item:selected {
+    background-color: #0284c7;
+    color: #ffffff;
+}
+QListWidget#transponder_list::item:hover {
+    background-color: #f1f5f9;
+}
+
+/* Search Bar Components */
+QLineEdit#search_input {
+    background-color: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    padding: 6px 12px;
+    color: #0f172a;
+    font-size: 13px;
+}
+QLineEdit#search_input:focus {
+    border-color: #0284c7;
+}
+QPushButton#search_nav_btn {
+    background-color: #f1f5f9;
+    color: #334155;
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    text-align: center;
+}
+QPushButton#search_nav_btn:hover:enabled {
+    background-color: #e2e8f0;
+    color: #0284c7;
+    border-color: #0284c7;
+}
+QPushButton#search_nav_btn:disabled {
+    color: #94a3b8;
+    background-color: #f8fafc;
+    border-color: #e2e8f0;
+}
+QPushButton#search_mark_btn {
+    background-color: #e0f2fe;
+    color: #0369a1;
+    border: 1px solid #bae6fd;
+    border-radius: 4px;
+    font-size: 13px;
+    font-weight: bold;
+    text-align: center;
+}
+QPushButton#search_mark_btn:hover:enabled {
+    background-color: #bae6fd;
+    color: #0284c7;
+    border-color: #38bdf8;
+}
+QPushButton#search_mark_btn:disabled {
+    color: #94a3b8;
+    background-color: #f8fafc;
+    border-color: #e2e8f0;
+}
+QLabel#search_count_badge {
+    background-color: #f1f5f9;
+    color: #475569;
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-size: 12px;
+    font-weight: 500;
 }
 """
 

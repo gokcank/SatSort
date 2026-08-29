@@ -21,6 +21,7 @@ from PySide6.QtWidgets import (
 
 from ..core.models import Channel, ChannelType, Polarization
 from ..i18n import t
+from .theme import get_current_theme
 
 
 class ChannelParametersWidget(QGroupBox):
@@ -65,12 +66,12 @@ class ChannelParametersWidget(QGroupBox):
 
         for row, (i18n_key, attr_name) in enumerate(self.PARAM_KEYS):
             lbl_title = QLabel(t(i18n_key) + ":")
-            lbl_title.setStyleSheet("color: #94a3b8; font-size: 12px;")
+            lbl_title.setObjectName("param_title")
             layout.addWidget(lbl_title, row, 0)
             self._title_labels[attr_name] = lbl_title
 
             lbl_val = QLabel("-")
-            lbl_val.setStyleSheet("color: #f1f5f9; font-size: 12px; font-weight: bold;")
+            lbl_val.setObjectName("param_value")
             lbl_val.setTextInteractionFlags(Qt.TextSelectableByMouse)
             layout.addWidget(lbl_val, row, 1)
 
@@ -135,26 +136,7 @@ class TransponderChannelsWidget(QGroupBox):
         layout.setContentsMargins(8, 16, 8, 8)
 
         self.list_widget = QListWidget()
-        self.list_widget.setStyleSheet("""
-            QListWidget {
-                background-color: #0f172a;
-                border: 1px solid #334155;
-                border-radius: 6px;
-                padding: 4px;
-            }
-            QListWidget::item {
-                padding: 5px 8px;
-                border-radius: 4px;
-                color: #e2e8f0;
-            }
-            QListWidget::item:selected {
-                background-color: #1e3a8a;
-                color: #ffffff;
-            }
-            QListWidget::item:hover {
-                background-color: #1e293b;
-            }
-        """)
+        self.list_widget.setObjectName("transponder_list")
         self.list_widget.itemClicked.connect(self._on_item_clicked)
         self.list_widget.itemDoubleClicked.connect(self._on_item_clicked)
         layout.addWidget(self.list_widget)
@@ -176,7 +158,8 @@ class TransponderChannelsWidget(QGroupBox):
                 item = QListWidgetItem(f"{prefix}{ch.channel_name}")
                 item.setData(Qt.UserRole, ch)
                 if ch == selected_channel:
-                    item.setForeground(QColor("#60a5fa"))
+                    is_light = get_current_theme() == "light"
+                    item.setForeground(QColor("#0284c7") if is_light else QColor("#60a5fa"))
                     item.setFont(QFont("", -1, QFont.Bold))
                 self.list_widget.addItem(item)
 

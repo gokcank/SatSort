@@ -143,15 +143,15 @@ class ChannelTableWidget(QTableWidget):
             )
             item_type = QTableWidgetItem(type_label)
             item_type.setTextAlignment(Qt.AlignCenter)
-            item_type.setFont(bold_font)
+            is_light = get_current_theme() == "light"
             if ch.channel_type == ChannelType.TV:
-                item_type.setForeground(QColor("#60a5fa"))  # Light Blue
+                item_type.setForeground(QColor("#0284c7") if is_light else QColor("#60a5fa"))  # Deep vs Light Blue
             elif ch.channel_type == ChannelType.RADIO:
-                item_type.setForeground(QColor("#a78bfa"))  # Light Purple
+                item_type.setForeground(QColor("#7c3aed") if is_light else QColor("#a78bfa"))  # Deep vs Light Purple
             elif ch.channel_type == ChannelType.DATA:
-                item_type.setForeground(QColor("#34d399"))  # Green
+                item_type.setForeground(QColor("#047857") if is_light else QColor("#34d399"))  # Deep Green vs Mint
             else:
-                item_type.setForeground(QColor("#94a3b8"))  # Gray
+                item_type.setForeground(QColor("#475569") if is_light else QColor("#94a3b8"))  # Slate vs Light Gray
             item_type.setFlags(Qt.ItemIsEnabled | Qt.ItemIsSelectable | Qt.ItemIsDragEnabled)
             self.setItem(row, self.COL_TYPE, item_type)
 

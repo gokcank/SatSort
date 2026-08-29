@@ -15,6 +15,7 @@ from PySide6.QtWidgets import (
 )
 
 from ..i18n import t
+from .theme import get_current_theme
 
 
 class SearchBarWidget(QWidget):
@@ -34,7 +35,7 @@ class SearchBarWidget(QWidget):
 
     def _setup_ui(self) -> None:
         layout = QHBoxLayout(self)
-        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setContentsMargins(8, 4, 8, 4)
         layout.setSpacing(6)
 
         # Search icon label
@@ -44,126 +45,38 @@ class SearchBarWidget(QWidget):
 
         # Search Input
         self._search_input = QLineEdit()
+        self._search_input.setObjectName("search_input")
         self._search_input.setPlaceholderText(f"{t('T118')} Ara... (Enter: Sonraki / İşaretle)")
         self._search_input.setClearButtonEnabled(True)
-        self._search_input.setStyleSheet("""
-            QLineEdit {
-                background-color: #0f172a;
-                border: 1px solid #334155;
-                border-radius: 6px;
-                padding: 6px 12px;
-                color: #f8fafc;
-                font-size: 13px;
-            }
-            QLineEdit:focus {
-                border-color: #3b82f6;
-            }
-        """)
         layout.addWidget(self._search_input, stretch=1)
 
         # Prev Match Button
         self._btn_prev = QPushButton("▲")
+        self._btn_prev.setObjectName("search_nav_btn")
         self._btn_prev.setToolTip("Önceki Eşleşme (Shift+Enter)")
         self._btn_prev.setEnabled(False)
         self._btn_prev.setFixedSize(28, 28)
-        self._btn_prev.setStyleSheet("""
-            QPushButton {
-                background-color: #1e293b;
-                color: #e2e8f0;
-                border: 1px solid #334155;
-                border-radius: 4px;
-                padding: 0px;
-                margin: 0px;
-                font-size: 12px;
-                font-weight: bold;
-                text-align: center;
-            }
-            QPushButton:hover:enabled {
-                background-color: #334155;
-                color: #38bdf8;
-                border-color: #0284c7;
-            }
-            QPushButton:disabled {
-                color: #475569;
-                background-color: #0f172a;
-                border-color: #1e293b;
-            }
-        """)
         layout.addWidget(self._btn_prev)
 
         # Next Match Button
         self._btn_next = QPushButton("▼")
+        self._btn_next.setObjectName("search_nav_btn")
         self._btn_next.setToolTip("Sonraki Eşleşme (Enter)")
         self._btn_next.setEnabled(False)
         self._btn_next.setFixedSize(28, 28)
-        self._btn_next.setStyleSheet("""
-            QPushButton {
-                background-color: #1e293b;
-                color: #e2e8f0;
-                border: 1px solid #334155;
-                border-radius: 4px;
-                padding: 0px;
-                margin: 0px;
-                font-size: 12px;
-                font-weight: bold;
-                text-align: center;
-            }
-            QPushButton:hover:enabled {
-                background-color: #334155;
-                color: #38bdf8;
-                border-color: #0284c7;
-            }
-            QPushButton:disabled {
-                color: #475569;
-                background-color: #0f172a;
-                border-color: #1e293b;
-            }
-        """)
         layout.addWidget(self._btn_next)
 
         # Batch Mark Matches Button
         self._btn_mark_all = QPushButton("✔")
+        self._btn_mark_all.setObjectName("search_mark_btn")
         self._btn_mark_all.setToolTip(f"{t('T143')} (Ctrl+Enter)")
         self._btn_mark_all.setEnabled(False)
         self._btn_mark_all.setFixedSize(28, 28)
-        self._btn_mark_all.setStyleSheet("""
-            QPushButton {
-                background-color: #1e293b;
-                color: #e2e8f0;
-                border: 1px solid #334155;
-                border-radius: 4px;
-                padding: 0px;
-                margin: 0px;
-                font-size: 13px;
-                font-weight: bold;
-                text-align: center;
-            }
-            QPushButton:hover:enabled {
-                background-color: #164e63;
-                color: #38bdf8;
-                border-color: #0891b2;
-            }
-            QPushButton:disabled {
-                color: #475569;
-                background-color: #0f172a;
-                border-color: #1e293b;
-            }
-        """)
         layout.addWidget(self._btn_mark_all)
 
         # Match Count Badge Label
         self._count_label = QLabel("")
-        self._count_label.setStyleSheet("""
-            QLabel {
-                background-color: #1e293b;
-                color: #94a3b8;
-                border: 1px solid #334155;
-                border-radius: 4px;
-                padding: 4px 8px;
-                font-size: 12px;
-                font-weight: 500;
-            }
-        """)
+        self._count_label.setObjectName("search_count_badge")
         self._count_label.setVisible(False)
         layout.addWidget(self._count_label)
 
@@ -227,35 +140,62 @@ class SearchBarWidget(QWidget):
         self._btn_next.setToolTip(f"{t('T110')} (Enter)")
         self._btn_mark_all.setToolTip(f"{t('T143')} (Ctrl+Enter)")
 
+        is_light = get_current_theme() == "light"
         if has_matches:
             if current_index >= 0:
                 self._count_label.setText(f"{current_index + 1} / {match_count} ({total} {t('T118')})")
             else:
                 self._count_label.setText(f"{match_count} / {total} {t('T118')}")
 
-            self._count_label.setStyleSheet("""
-                QLabel {
-                    background-color: #172554;
-                    color: #60a5fa;
-                    border: 1px solid #1e40af;
-                    border-radius: 4px;
-                    padding: 4px 8px;
-                    font-size: 12px;
-                    font-weight: bold;
-                }
-            """)
+            if is_light:
+                self._count_label.setStyleSheet("""
+                    QLabel {
+                        background-color: #dbeafe;
+                        color: #1e40af;
+                        border: 1px solid #93c5fd;
+                        border-radius: 4px;
+                        padding: 4px 8px;
+                        font-size: 12px;
+                        font-weight: bold;
+                    }
+                """)
+            else:
+                self._count_label.setStyleSheet("""
+                    QLabel {
+                        background-color: #172554;
+                        color: #60a5fa;
+                        border: 1px solid #1e40af;
+                        border-radius: 4px;
+                        padding: 4px 8px;
+                        font-size: 12px;
+                        font-weight: bold;
+                    }
+                """)
         else:
             self._count_label.setText(f"0 / {total} {t('T118')}")
-            self._count_label.setStyleSheet("""
-                QLabel {
-                    background-color: #450a0a;
-                    color: #f87171;
-                    border: 1px solid #991b1b;
-                    border-radius: 4px;
-                    padding: 4px 8px;
-                    font-size: 12px;
-                }
-            """)
+            if is_light:
+                self._count_label.setStyleSheet("""
+                    QLabel {
+                        background-color: #fee2e2;
+                        color: #991b1b;
+                        border: 1px solid #fca5a5;
+                        border-radius: 4px;
+                        padding: 4px 8px;
+                        font-size: 12px;
+                        font-weight: bold;
+                    }
+                """)
+            else:
+                self._count_label.setStyleSheet("""
+                    QLabel {
+                        background-color: #450a0a;
+                        color: #f87171;
+                        border: 1px solid #991b1b;
+                        border-radius: 4px;
+                        padding: 4px 8px;
+                        font-size: 12px;
+                    }
+                """)
         self._count_label.setVisible(True)
 
     def set_match_count(self, count: int, total: int) -> None:

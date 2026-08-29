@@ -975,8 +975,11 @@ class MainWindow(QMainWindow):
             apply_theme(app, theme_name)
             self.act_dark_theme.setChecked(theme_name == "dark")
             self.act_light_theme.setChecked(theme_name == "light")
-            # Refresh channel table row backgrounds
+            # Refresh channel table row backgrounds and badges
             self.channel_table.set_channels(self.channel_table.get_channels())
+            # Refresh sidebar transponder list
+            selected = self.channel_table.get_selected_channel()
+            self.sidebar.set_channel(selected, self.channel_table.get_channels())
 
     def show_about(self) -> None:
         AboutDialog(self).exec()
