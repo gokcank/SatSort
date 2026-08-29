@@ -6,10 +6,10 @@ Version: 1.0
 Architectures: amd64
 Components: main
 Description: Official APT Repository for SatSort Channel Editor
-Date: Sat, 29 Aug 2026 22:14:03 UTC
+Date: Sat, 29 Aug 2026 22:29:49 UTC
 MD5Sum:
- cd714592b3862b84491d85d43a3a1155 463 main/binary-amd64/Packages
- 05dd4b5f6a39bbec816e35e898423e56 375 main/binary-amd64/Packages.gz
+ 23754c90b567f2b2b0953db7dd0c700d 559 main/binary-amd64/Packages
+ 7e442de91ab7e398646c0c831e729b90 422 main/binary-amd64/Packages.gz
 SHA256:
- 77f731495b70480509876220285d06b1b6935d84d5f2250f15ba51c85d6cc9d3 463 main/binary-amd64/Packages
- f3bf792dd8e1ec5d666e285d42300fd2e844c9eed778777a94ebb5eaff4cd432 375 main/binary-amd64/Packages.gz
+ 7a27cec021d3cfa115cf38c86a50fbeadd1c16ae9c022f275ba99a605b81615b 559 main/binary-amd64/Packages
+ dda9732b89b9dd525d206f30e3f5c315fa5bddf4389210ed9b5362ceda867f64 422 main/binary-amd64/Packages.gz

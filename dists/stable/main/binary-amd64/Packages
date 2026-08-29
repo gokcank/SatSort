@@ -1,14 +1,16 @@
 Package: satsort
-Version: 1.0.0
+Version: 1.1.0
 Architecture: amd64
-Maintainer: Gökcan <https://github.com/gokcank>
+Maintainer: Gokcan <https://github.com/gokcank>
 Installed-Size: 80000
 Depends: libc6
 Section: video
 Priority: optional
-Filename: pool/main/s/satsort/satsort_1.0.1_amd64.deb
-Size: 76439676
-SHA256: 512c4a75c0a76326e38a123c640eaef0418812f96b892264e078fd5a994eafa8
-SHA1: 15a7a320cf5e03916be9f98a18a5e3652c661069
-MD5sum: bce82cc9c67e4a446adb241a510c35ac
+Filename: pool/main/s/satsort/satsort_1.1.0_amd64.deb
+Size: 76439844
+SHA256: d8ecf75824c2d2a1f0c37b8573d7192afdc20855e7a3a8613d881090d34e3b37
+SHA1: 17b775740ea1faa432177a97a2eefb6d666abfea
+MD5sum: b5b33472b8ffe1783d6683aa8be81b32
 Description: Modern Linux Native SatcoDX Channel List Editor
+SatSort is a visual channel list editor for satellite receivers
+using the SatcoDX (.sdx) format.
