@@ -19,6 +19,7 @@ from PySide6.QtWidgets import (
 from ..core.models import Channel, ChannelType, Polarization
 from ..i18n import t
 from .theme import get_current_theme
+from .icons import get_icon
 
 
 class ChannelTableWidget(QTableWidget):
@@ -748,7 +749,7 @@ class ChannelTableWidget(QTableWidget):
 
         menu.addSeparator()
 
-        act_rename = QAction(t("T116"), self)  # Kanal Adını Değiştir
+        act_rename = QAction(get_icon("edit"), t("T116"), self)  # Kanal Adını Değiştir
         act_rename.setEnabled(has_selection)
         act_rename.triggered.connect(
             lambda checked=False, r=target_row, c=selected_ch: self.request_rename.emit(r, c) if c else None
@@ -758,13 +759,13 @@ class ChannelTableWidget(QTableWidget):
         menu.addSeparator()
 
         # Dynamic Delete options
-        act_del_single = QAction("🗑️ " + t("T111"), self)  # Bu Kanalı Sil / Seçiliyi Sil
+        act_del_single = QAction(get_icon("delete", "#ef4444"), t("T111"), self)  # Bu Kanalı Sil / Seçiliyi Sil
         act_del_single.setEnabled(has_selection)
         act_del_single.triggered.connect(lambda: QTimer.singleShot(0, self.delete_selected))
         menu.addAction(act_del_single)
 
         if checked_count > 0:
-            act_del_chk = QAction(f"❌ {t('T112')} ({checked_count} {t('T118')})", self)  # İşaretli Kanalları Sil (X Kanal)
+            act_del_chk = QAction(get_icon("delete", "#ef4444"), f"{t('T112')} ({checked_count} {t('T118')})", self)  # İşaretli Kanalları Sil (X Kanal)
             act_del_chk.triggered.connect(lambda: QTimer.singleShot(0, self.delete_checked))
             menu.addAction(act_del_chk)
 

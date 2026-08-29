@@ -26,10 +26,11 @@ from ...core.models import Channel
 from ...core.parser import read_sdx_file
 from ...core.reference_sorter import sort_channels_by_reference
 from ...i18n import t, i18n
+from ..icons import get_icon
 
 
 class ReferenceSortDialog(QDialog):
-    """Interactive dialog for selecting a reference list and applying automatic sorting."""
+    """Dialog allowing user to choose a reference .sdx file and sort the current channel list accordingly."""
 
     sorting_applied = Signal(list)  # Emits sorted List[Channel]
 
@@ -39,7 +40,8 @@ class ReferenceSortDialog(QDialog):
         self._sorted_channels: Optional[List[Channel]] = None
 
         is_tr = i18n.current_language == "Türkçe"
-        self.setWindowTitle("🔗 " + ("Referans Liste ile Sırala" if is_tr else "Sort by Reference List"))
+        self.setWindowTitle("Referans Liste ile Sırala" if is_tr else "Sort by Reference List")
+        self.setWindowIcon(get_icon("link"))
         self.resize(560, 420)
         self._setup_ui()
 

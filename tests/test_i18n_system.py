@@ -125,10 +125,11 @@ class TestI18nSystem(unittest.TestCase):
         try:
             window = MainWindow()
 
-            # 1. Check button existence and initial code
+            # 1. Check button existence, vector icon, and initial code
             self.assertTrue(hasattr(window, "btn_lang"))
+            self.assertFalse(window.btn_lang.icon().isNull())
             current_code = i18n.get_language_code()
-            self.assertEqual(window.btn_lang.text(), f"🌐 {current_code} ▾")
+            self.assertEqual(window.btn_lang.text(), f"{current_code} ▾")
 
             # 2. Check status bar menu actions count and endonyms
             actions = window.status_lang_menu.actions()
@@ -138,17 +139,17 @@ class TestI18nSystem(unittest.TestCase):
 
             # 3. Switch language dynamically to English
             i18n.set_language("English")
-            self.assertEqual(window.btn_lang.text(), "🌐 EN ▾")
+            self.assertEqual(window.btn_lang.text(), "EN ▾")
             self.assertEqual(window.menu_file.title(), "Menu")
 
             # 4. Switch language dynamically to Deutsch
             i18n.set_language("Deutsch")
-            self.assertEqual(window.btn_lang.text(), "🌐 DE ▾")
+            self.assertEqual(window.btn_lang.text(), "DE ▾")
             self.assertEqual(window.menu_file.title(), "Menu")
 
             # 5. Switch back to Türkçe
             i18n.set_language("Türkçe")
-            self.assertEqual(window.btn_lang.text(), "🌐 TR ▾")
+            self.assertEqual(window.btn_lang.text(), "TR ▾")
             self.assertEqual(window.menu_file.title(), "Menü")
 
             window.close()

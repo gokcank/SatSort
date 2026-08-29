@@ -26,6 +26,7 @@ from PySide6.QtWidgets import (
 from ...core.models import Channel
 from ...core.parser import read_sdx_file
 from ...i18n import t
+from ..icons import get_icon
 
 
 class CompareFilesDialog(QDialog):
@@ -126,14 +127,14 @@ class CompareFilesDialog(QDialog):
         layout_order = QVBoxLayout(tab_order)
         self.table_order = self._create_table(["Kanal Adı", "Mevcut Sıra", "Karşılaştırılan Sıra", "Fark", "Frekans / Pol"])
         layout_order.addWidget(self.table_order)
-        self.tabs.addTab(tab_order, "🔢 Sırası Değişenler (0)")
+        self.tabs.addTab(tab_order, get_icon("near_me"), "Sırası Değişenler (0)")
 
         # Tab 2: Name Changed (İsmi Değişenler)
         tab_renamed = QWidget()
         layout_renamed = QVBoxLayout(tab_renamed)
         self.table_renamed = self._create_table(["Sıra", "Mevcut İsim", "Yeni Dosyadaki İsim", "Frekans", "Polarizasyon", "SR"])
         layout_renamed.addWidget(self.table_renamed)
-        self.tabs.addTab(tab_renamed, "✏️ İsmi Değişenler (0)")
+        self.tabs.addTab(tab_renamed, get_icon("edit"), "İsmi Değişenler (0)")
 
         # Tab 3: Removed Channels (Silinenler)
         tab_rem = QWidget()
@@ -141,11 +142,12 @@ class CompareFilesDialog(QDialog):
         self.table_removed = self._create_table(["✓", t("T117"), t("T123"), t("T126"), t("T127"), t("T128")])
         layout_rem.addWidget(self.table_removed)
 
-        self.btn_remove_selected = QPushButton("❌ " + t("T164"))  # Silinen Seçili Kanalları Çıkart
+        self.btn_remove_selected = QPushButton(t("T164"))  # Silinen Seçili Kanalları Çıkart
+        self.btn_remove_selected.setIcon(get_icon("delete", "#ffffff"))
         self.btn_remove_selected.setStyleSheet("background-color: #991b1b; color: white; padding: 6px 12px; border-radius: 4px; font-weight: bold;")
         self.btn_remove_selected.clicked.connect(self._on_remove_channels_clicked)
         layout_rem.addWidget(self.btn_remove_selected)
-        self.tabs.addTab(tab_rem, "🗑️ " + t("T157") + " (0)")  # Silinen Kanallar
+        self.tabs.addTab(tab_rem, get_icon("delete", "#ef4444"), f"{t('T157')} (0)")  # Silinen Kanallar
 
         # Tab 4: Inserted Channels (Yeni Eklenenler)
         tab_ins = QWidget()
@@ -153,11 +155,12 @@ class CompareFilesDialog(QDialog):
         self.table_inserted = self._create_table(["✓", t("T117"), t("T123"), t("T126"), t("T127"), t("T128")])
         layout_ins.addWidget(self.table_inserted)
 
-        self.btn_insert_selected = QPushButton("➕ " + t("T165"))  # Yeni Eklenenleri Ekle
+        self.btn_insert_selected = QPushButton(t("T165"))  # Yeni Eklenenleri Ekle
+        self.btn_insert_selected.setIcon(get_icon("download", "#ffffff"))
         self.btn_insert_selected.setStyleSheet("background-color: #065f46; color: white; padding: 6px 12px; border-radius: 4px; font-weight: bold;")
         self.btn_insert_selected.clicked.connect(self._on_insert_channels_clicked)
         layout_ins.addWidget(self.btn_insert_selected)
-        self.tabs.addTab(tab_ins, "✨ " + t("T158") + " (0)")  # Eklenen Kanallar
+        self.tabs.addTab(tab_ins, get_icon("download", "#10b981"), f"{t('T158')} (0)")  # Eklenen Kanallar
 
         layout.addWidget(self.tabs)
 
@@ -268,10 +271,10 @@ class CompareFilesDialog(QDialog):
         self._populate_diff_table(self.table_inserted, self._inserted_channels, is_removal=False)
 
         # Update tab headers with badge counts
-        self.tabs.setTabText(0, f"🔢 Sırası Değişenler ({len(self._order_changed)})")
-        self.tabs.setTabText(1, f"✏️ İsmi Değişenler ({len(self._name_changed)})")
-        self.tabs.setTabText(2, f"🗑️ {t('T157')} ({len(self._removed_channels)})")
-        self.tabs.setTabText(3, f"✨ {t('T158')} ({len(self._inserted_channels)})")
+        self.tabs.setTabText(0, f"Sırası Değişenler ({len(self._order_changed)})")
+        self.tabs.setTabText(1, f"İsmi Değişenler ({len(self._name_changed)})")
+        self.tabs.setTabText(2, f"{t('T157')} ({len(self._removed_channels)})")
+        self.tabs.setTabText(3, f"{t('T158')} ({len(self._inserted_channels)})")
 
     def _populate_order_table(self) -> None:
         self.table_order.setRowCount(len(self._order_changed))

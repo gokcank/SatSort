@@ -51,37 +51,12 @@ from .dialogs import (
     ShortcutsDialog,
 )
 
-MATERIAL_SVGS = {
-    "folder_open": '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="{color}"><path d="M20 6h-8l-2-2H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm0 12H4V8h16v10z"/></svg>',
-    "save": '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="{color}"><path d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm2 16H5V5h11.17L19 7.83V19zm-7-7c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3zM6 6h9v4H6z"/></svg>',
-    "close": '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="{color}"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>',
-    "delete": '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="{color}"><path d="M16 9v10H8V9h8m-1.5-6h-5l-1 1H5v2h14V4h-3.5l-1-1zM18 7H6v12c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7z"/></svg>',
-    "library_add_check": '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="{color}"><path d="M20 2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H8V4h12v12zm-7.53-2.47L18.47 7.53l-1.41-1.41-4.59 4.59-1.59-1.59-1.41 1.41 3 3zM4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6z"/></svg>',
-    "deselect": '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="{color}"><path d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/></svg>',
-    "compare_arrows": '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="{color}"><path d="M9.01 14H2v2h7.01v3L13 15.5 9.01 12v2zm5.98-1v-3H22V8h-7.01V5L11 8.5l3.99 3.5z"/></svg>',
-    "download": '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="{color}"><path d="M5 20h14v-2H5v2zM19 9h-4V3H9v6H5l7 7 7-7z"/></svg>',
-    "info": '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="{color}"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>',
-    "arrow_upward": '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="{color}"><path d="M4 12l1.41 1.41L11 7.83V20h2V7.83l5.58 5.59L20 12l-8-8-8 8z"/></svg>',
-    "arrow_downward": '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="{color}"><path d="M20 12l-1.41-1.41L13 16.17V4h-2v12.17l-5.58-5.59L4 12l8 8 8-8z"/></svg>',
-    "exit_to_app": '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="{color}"><path d="M10.09 15.59L11.5 17l5-5-5-5-1.41 1.41L12.67 11H3v2h9.67l-2.58 2.59zM19 3H5c-1.11 0-2 .9-2 2v4h2V5h14v14H5v-4H3v4c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/></svg>',
-    "help_outline": '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="{color}"><path d="M11 18h2v-2h-2v2zm1-16C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm0-14c-2.21 0-4 1.79-4 4h2c0-1.1.9-2 2-2s2 .9 2 2c0 2-3 1.75-3 5h2c0-2.25 3-2.5 3-5 0-2.21-1.79-4-4-4z"/></svg>'
-}
+from .icons import get_icon
 
 
-def _create_material_icon(name: str, color: str = "#38bdf8", size: int = 20) -> QIcon:
-    """Creates a crisp, anti-aliased vector QIcon from standard Google Material Symbols SVG."""
-    svg_template = MATERIAL_SVGS.get(name, "")
-    if not svg_template:
-        return QIcon()
-    svg_data = svg_template.format(color=color).encode("utf-8")
-    renderer = QSvgRenderer(QByteArray(svg_data))
-    pixmap = QPixmap(size, size)
-    pixmap.fill(Qt.transparent)
-    painter = QPainter(pixmap)
-    painter.setRenderHint(QPainter.Antialiasing)
-    renderer.render(painter)
-    painter.end()
-    return QIcon(pixmap)
+def _create_material_icon(name: str, color: Optional[str] = None, size: int = 20) -> QIcon:
+    """Creates a crisp, anti-aliased vector QIcon from Google Material Symbols SVG."""
+    return get_icon(name, color=color, size=size)
 
 
 class MainWindow(QMainWindow):
@@ -150,7 +125,7 @@ class MainWindow(QMainWindow):
         self.menu_file.addAction(self.act_open)
 
         # Recent Files Submenu
-        self.menu_recent = self.menu_file.addMenu("🕒 " + ("Son Açılan Dosyalar" if i18n.current_language == "Türkçe" else "Recent Files"))
+        self.menu_recent = self.menu_file.addMenu(get_icon("history"), "Son Açılan Dosyalar" if i18n.current_language == "Türkçe" else "Recent Files")
         self._update_recent_files_menu()
 
         self.act_save = QAction(_create_material_icon("save", "#38bdf8"), "Kaydet" if i18n.current_language == "Türkçe" else "Save", self)
@@ -161,16 +136,16 @@ class MainWindow(QMainWindow):
 
         # Export Submenu
         is_tr = i18n.current_language == "Türkçe"
-        self.menu_export = self.menu_file.addMenu("📤 " + ("Dışa Aktar" if is_tr else "Export"))
-        self.act_export_csv = QAction("📄 " + ("CSV Dosyası Olarak (.csv)..." if is_tr else "As CSV File (.csv)..."), self)
+        self.menu_export = self.menu_file.addMenu(get_icon("download"), "Dışa Aktar" if is_tr else "Export")
+        self.act_export_csv = QAction(get_icon("description"), "CSV Dosyası Olarak (.csv)..." if is_tr else "As CSV File (.csv)...", self)
         self.act_export_csv.triggered.connect(self._export_csv)
         self.menu_export.addAction(self.act_export_csv)
 
-        self.act_export_txt = QAction("📝 " + ("Metin Dosyası Olarak (.txt)..." if is_tr else "As Text File (.txt)..."), self)
+        self.act_export_txt = QAction(get_icon("text_snippet"), "Metin Dosyası Olarak (.txt)..." if is_tr else "As Text File (.txt)...", self)
         self.act_export_txt.triggered.connect(self._export_txt)
         self.menu_export.addAction(self.act_export_txt)
 
-        self.act_export_m3u = QAction("📺 " + ("M3U Listesi Olarak (.m3u)..." if is_tr else "As M3U Playlist (.m3u)..."), self)
+        self.act_export_m3u = QAction(get_icon("playlist_play"), "M3U Listesi Olarak (.m3u)..." if is_tr else "As M3U Playlist (.m3u)...", self)
         self.act_export_m3u.triggered.connect(self._export_m3u)
         self.menu_export.addAction(self.act_export_m3u)
 
@@ -202,9 +177,9 @@ class MainWindow(QMainWindow):
         self.act_move_down.triggered.connect(self.channel_table.move_selected_down)
         self.menu_edit.addAction(self.act_move_down)
 
-        self.act_move_to = QAction("🎯 " + ("Numaraya Taşı..." if i18n.current_language == "Türkçe" else "Move to Slot #..."), self)
+        self.act_move_to = QAction(get_icon("near_me"), "Numaraya Taşı..." if i18n.current_language == "Türkçe" else "Move to Slot #...", self)
         self.act_move_to.setShortcut(QKeySequence("Ctrl+M"))
-        self.act_move_to.setToolTip("🎯 " + ("Kanalı Numaraya Taşı (Ctrl+M)" if i18n.current_language == "Türkçe" else "Move Channel to Slot # (Ctrl+M)"))
+        self.act_move_to.setToolTip(f"{'Kanalı Numaraya Taşı' if i18n.current_language == 'Türkçe' else 'Move Channel to Slot #'} (Ctrl+M)")
         self.act_move_to.triggered.connect(lambda: self._on_request_move(is_checked=False))
         self.menu_edit.addAction(self.act_move_to)
 
@@ -245,26 +220,25 @@ class MainWindow(QMainWindow):
 
         self.menu_tools.addSeparator()
 
-        is_tr = i18n.current_language == "Türkçe"
-        self.act_move_radios_end = QAction("📻 " + ("Radyoları Listenin Sonuna Taşı" if is_tr else "Move Radios to End"), self)
+        self.act_move_radios_end = QAction(get_icon("radio"), "Radyoları Listenin Sonuna Taşı" if is_tr else "Move Radios to End", self)
         self.act_move_radios_end.triggered.connect(self._batch_move_radios_to_end)
         self.menu_tools.addAction(self.act_move_radios_end)
 
-        self.act_remove_scrambled = QAction("🔒 " + ("Şifreli Kanalları Sil..." if is_tr else "Remove Scrambled Channels..."), self)
+        self.act_remove_scrambled = QAction(get_icon("lock", "#ef4444"), "Şifreli Kanalları Sil..." if is_tr else "Remove Scrambled Channels...", self)
         self.act_remove_scrambled.triggered.connect(self._batch_remove_scrambled)
         self.menu_tools.addAction(self.act_remove_scrambled)
 
-        self.act_normalize_names = QAction("🔤 " + ("Kanal İsimlerini Standartlaştır" if is_tr else "Normalize Channel Names"), self)
+        self.act_normalize_names = QAction(get_icon("spellcheck"), "Kanal İsimlerini Standartlaştır" if is_tr else "Normalize Channel Names", self)
         self.act_normalize_names.triggered.connect(self._batch_normalize_names)
         self.menu_tools.addAction(self.act_normalize_names)
 
-        self.act_remove_duplicates = QAction("🔍 " + ("Çift / Mükerrer Kanalları Temizle..." if is_tr else "Remove Duplicate Channels..."), self)
+        self.act_remove_duplicates = QAction(get_icon("filter_alt"), "Çift / Mükerrer Kanalları Temizle..." if is_tr else "Remove Duplicate Channels...", self)
         self.act_remove_duplicates.triggered.connect(self._batch_remove_duplicates)
         self.menu_tools.addAction(self.act_remove_duplicates)
 
         self.menu_tools.addSeparator()
 
-        self.act_ref_sort = QAction("🔗 " + ("Referans Liste ile Sırala..." if is_tr else "Sort by Reference List..."), self)
+        self.act_ref_sort = QAction(get_icon("link"), "Referans Liste ile Sırala..." if is_tr else "Sort by Reference List...", self)
         self.act_ref_sort.triggered.connect(self._open_reference_sort_dialog)
         self.menu_tools.addAction(self.act_ref_sort)
 
@@ -272,30 +246,30 @@ class MainWindow(QMainWindow):
         self.menu_settings = menu_bar.addMenu("Ayarlar" if i18n.current_language == "Türkçe" else "Settings")
 
         # Theme Submenu
-        self.menu_theme = self.menu_settings.addMenu("🎨 Tema" if i18n.current_language == "Türkçe" else "🎨 Theme")
+        self.menu_theme = self.menu_settings.addMenu(get_icon("dark_mode"), "Tema" if i18n.current_language == "Türkçe" else "Theme")
         self.theme_action_group = QActionGroup(self)
         self.theme_action_group.setExclusive(True)
 
         current_theme = get_current_theme()
 
-        self.act_dark_theme = QAction("🌙 Koyu Tema" if i18n.current_language == "Türkçe" else "🌙 Dark Theme", self, checkable=True)
+        self.act_dark_theme = QAction(get_icon("dark_mode"), "Koyu Tema" if i18n.current_language == "Türkçe" else "Dark Theme", self, checkable=True)
         self.act_dark_theme.setChecked(current_theme == "dark")
         self.act_dark_theme.triggered.connect(lambda: self._set_theme("dark"))
         self.theme_action_group.addAction(self.act_dark_theme)
         self.menu_theme.addAction(self.act_dark_theme)
 
-        self.act_light_theme = QAction("☀️ Açık Tema" if i18n.current_language == "Türkçe" else "☀️ Light Theme", self, checkable=True)
+        self.act_light_theme = QAction(get_icon("light_mode", "#f59e0b"), "Açık Tema" if i18n.current_language == "Türkçe" else "Light Theme", self, checkable=True)
         self.act_light_theme.setChecked(current_theme == "light")
         self.act_light_theme.triggered.connect(lambda: self._set_theme("light"))
         self.theme_action_group.addAction(self.act_light_theme)
         self.menu_theme.addAction(self.act_light_theme)
 
         # Language Submenu
-        self.menu_lang = self.menu_settings.addMenu("🌐 " + ("Dil" if i18n.current_language == "Türkçe" else "Language"))
+        self.menu_lang = self.menu_settings.addMenu(get_icon("language"), "Dil" if i18n.current_language == "Türkçe" else "Language")
         self._rebuild_language_menu()
 
         # Toolbar Appearance Submenu
-        self.menu_toolbar_style = self.menu_settings.addMenu("📐 " + ("Araç Çubuğu Görünümü" if is_tr else "Toolbar Appearance"))
+        self.menu_toolbar_style = self.menu_settings.addMenu(get_icon("view_agenda"), "Araç Çubuğu Görünümü" if is_tr else "Toolbar Appearance")
         self.tb_style_group = QActionGroup(self)
         self.tb_style_group.setExclusive(True)
 
@@ -317,7 +291,7 @@ class MainWindow(QMainWindow):
         self.menu_settings.addSeparator()
 
         # Auto-Backup Toggle
-        self.act_toggle_auto_backup = QAction("☑️ " + ("Otomatik Yedek Oluştur (.bak)" if i18n.current_language == "Türkçe" else "Create Automatic Backup (.bak)"), self, checkable=True)
+        self.act_toggle_auto_backup = QAction(get_icon("backup"), "Otomatik Yedek Oluştur (.bak)" if i18n.current_language == "Türkçe" else "Create Automatic Backup (.bak)", self, checkable=True)
         self.act_toggle_auto_backup.setChecked(config.get_auto_backup())
         self.act_toggle_auto_backup.toggled.connect(self._on_toggle_auto_backup)
         self.menu_settings.addAction(self.act_toggle_auto_backup)
@@ -332,31 +306,31 @@ class MainWindow(QMainWindow):
 
         # 5. Help Menu
         self.menu_help = menu_bar.addMenu("Yardım" if i18n.current_language == "Türkçe" else "Help")
-        self.act_about = QAction(_create_material_icon("help_outline", "#38bdf8"), "ℹ️ " + t("T106"), self)
+        self.act_about = QAction(_create_material_icon("help_outline", "#38bdf8"), t("T106"), self)
         self.act_about.setShortcut(QKeySequence("F1"))
         self.act_about.setToolTip(f"{t('T106')} (F1)")
         self.act_about.triggered.connect(self.show_about)
         self.menu_help.addAction(self.act_about)
 
-        self.act_shortcuts = QAction("⌨️ " + ("Klavye Kısayolları" if i18n.current_language == "Türkçe" else "Keyboard Shortcuts"), self)
+        self.act_shortcuts = QAction(get_icon("keyboard"), "Klavye Kısayolları" if i18n.current_language == "Türkçe" else "Keyboard Shortcuts", self)
         self.act_shortcuts.setShortcut(QKeySequence("Ctrl+/"))
-        self.act_shortcuts.setToolTip("⌨️ " + ("Klavye Kısayolları (Ctrl+/)" if i18n.current_language == "Türkçe" else "Keyboard Shortcuts (Ctrl+/)"))
+        self.act_shortcuts.setToolTip(f"{'Klavye Kısayolları' if i18n.current_language == 'Türkçe' else 'Keyboard Shortcuts'} (Ctrl+/)")
         self.act_shortcuts.triggered.connect(self._open_shortcuts_dialog)
         self.menu_help.addAction(self.act_shortcuts)
 
         self.menu_help.addSeparator()
 
-        self.act_report_issue = QAction("🐛 " + ("Hata Bildir / Geri Bildirim" if i18n.current_language == "Türkçe" else "Report Issue / Feedback"), self)
+        self.act_report_issue = QAction(get_icon("bug_report", "#ef4444"), "Hata Bildir / Geri Bildirim" if i18n.current_language == "Türkçe" else "Report Issue / Feedback", self)
         self.act_report_issue.triggered.connect(lambda: QDesktopServices.openUrl(QUrl("https://github.com/gokcank/SatSort/issues/new")))
         self.menu_help.addAction(self.act_report_issue)
 
-        self.act_github_repo = QAction("⭐ " + ("GitHub Deposu" if i18n.current_language == "Türkçe" else "GitHub Repository"), self)
+        self.act_github_repo = QAction(get_icon("star", "#f59e0b"), "GitHub Deposu" if i18n.current_language == "Türkçe" else "GitHub Repository", self)
         self.act_github_repo.triggered.connect(lambda: QDesktopServices.openUrl(QUrl("https://github.com/gokcank/SatSort")))
         self.menu_help.addAction(self.act_github_repo)
 
         self.menu_help.addSeparator()
 
-        self.act_check_updates = QAction("🔄 " + ("Güncellemeleri Denetle..." if i18n.current_language == "Türkçe" else "Check for Updates..."), self)
+        self.act_check_updates = QAction(get_icon("update", "#10b981"), "Güncellemeleri Denetle..." if i18n.current_language == "Türkçe" else "Check for Updates...", self)
         self.act_check_updates.triggered.connect(self._check_for_updates)
         self.menu_help.addAction(self.act_check_updates)
 
@@ -439,7 +413,8 @@ class MainWindow(QMainWindow):
     def _update_status_lang_button(self) -> None:
         """Updates the status bar language button text and its popup menu."""
         code = i18n.get_language_code()
-        self.btn_lang.setText(f"🌐 {code} ▾")
+        self.btn_lang.setIcon(get_icon("language"))
+        self.btn_lang.setText(f"{code} ▾")
         self.status_lang_menu.clear()
         for lang in i18n.get_supported_languages():
             endonym = i18n.get_language_endonym(lang)
@@ -499,7 +474,7 @@ class MainWindow(QMainWindow):
                 channel_name = channels[current_row].channel_name
 
         is_tr = i18n.current_language == "Türkçe"
-        dlg_title = "🎯 " + ("Kanalı Numaraya Taşı" if not is_checked else "İşaretli Kanalları Numaraya Taşı") if is_tr else ("🎯 Move Channel" if not is_checked else "🎯 Move Checked Channels")
+        dlg_title = ("Kanalı Numaraya Taşı" if not is_checked else "İşaretli Kanalları Numaraya Taşı") if is_tr else ("Move Channel" if not is_checked else "Move Checked Channels")
         dlg = MovePositionDialog(dlg_title, total, current_row + 1, channel_name, self)
         if dlg.exec():
             target_idx = dlg.get_target_index()
@@ -898,7 +873,7 @@ class MainWindow(QMainWindow):
             self.menu_recent.addAction(act)
 
         self.menu_recent.addSeparator()
-        act_clear = QAction("🗑️ " + ("Listeyi Temizle" if is_tr else "Clear List"), self)
+        act_clear = QAction(get_icon("delete_sweep", "#ef4444"), "Listeyi Temizle" if is_tr else "Clear List", self)
         act_clear.triggered.connect(self._clear_recent_files)
         self.menu_recent.addAction(act_clear)
 
@@ -1040,25 +1015,25 @@ class MainWindow(QMainWindow):
 
         # Menus
         self.menu_file.setTitle(t("T100"))
-        self.menu_recent.setTitle("🕒 " + ("Son Açılan Dosyalar" if i18n.current_language == "Türkçe" else "Recent Files"))
+        self.menu_recent.setTitle("Son Açılan Dosyalar" if i18n.current_language == "Türkçe" else "Recent Files")
         self._update_recent_files_menu()
         self.menu_edit.setTitle("Düzenle" if i18n.current_language == "Türkçe" else ("Edit" if i18n.current_language == "English" else ("Bearbeiten" if i18n.current_language == "Deutsch" else "Éditer")))
         self.menu_tools.setTitle(t("T103"))
         self.menu_settings.setTitle("Ayarlar" if i18n.current_language == "Türkçe" else ("Settings" if i18n.current_language == "English" else ("Einstellungen" if i18n.current_language == "Deutsch" else "Paramètres")))
-        self.menu_theme.setTitle("🎨 " + ("Tema" if i18n.current_language == "Türkçe" else ("Theme" if i18n.current_language == "English" else "Theme")))
-        self.menu_lang.setTitle("🌐 " + ("Dil" if i18n.current_language == "Türkçe" else ("Language" if i18n.current_language == "English" else "Sprache")))
+        self.menu_theme.setTitle("Tema" if i18n.current_language == "Türkçe" else ("Theme" if i18n.current_language == "English" else "Theme"))
+        self.menu_lang.setTitle("Dil" if i18n.current_language == "Türkçe" else ("Language" if i18n.current_language == "English" else "Sprache"))
         self.menu_help.setTitle("Yardım" if i18n.current_language == "Türkçe" else ("Help" if i18n.current_language == "English" else ("Hilfe" if i18n.current_language == "Deutsch" else "Aide")))
 
         is_tr = i18n.current_language == "Türkçe"
-        self.menu_toolbar_style.setTitle("📐 " + ("Araç Çubuğu Görünümü" if is_tr else "Toolbar Appearance"))
+        self.menu_toolbar_style.setTitle("Araç Çubuğu Görünümü" if is_tr else "Toolbar Appearance")
         self.act_tb_text_under.setText("İkon Altında Metin" if is_tr else "Text Under Icons")
         self.act_tb_text_beside.setText("İkon Yanında Metin" if is_tr else "Text Beside Icons")
         self.act_tb_icon_only.setText("Yalnızca İkon (Kompakt)" if is_tr else "Icons Only (Compact)")
 
         # Theme actions
-        self.act_dark_theme.setText("🌙 " + ("Koyu Tema" if i18n.current_language == "Türkçe" else "Dark Theme"))
-        self.act_light_theme.setText("☀️ " + ("Açık Tema" if i18n.current_language == "Türkçe" else "Light Theme"))
-        self.act_toggle_auto_backup.setText("☑️ " + ("Otomatik Yedek Oluştur (.bak)" if i18n.current_language == "Türkçe" else "Create Automatic Backup (.bak)"))
+        self.act_dark_theme.setText("Koyu Tema" if i18n.current_language == "Türkçe" else "Dark Theme")
+        self.act_light_theme.setText("Açık Tema" if i18n.current_language == "Türkçe" else "Light Theme")
+        self.act_toggle_auto_backup.setText("Otomatik Yedek Oluştur (.bak)" if i18n.current_language == "Türkçe" else "Create Automatic Backup (.bak)")
 
         # File actions
         self.act_open.setText(t("T101"))
@@ -1067,11 +1042,10 @@ class MainWindow(QMainWindow):
         self.act_save.setText(t("T102"))
         self.act_save.setToolTip(f"{t('T102')} (Ctrl+S)")
 
-        is_tr = i18n.current_language == "Türkçe"
-        self.menu_export.setTitle("📤 " + ("Dışa Aktar" if is_tr else "Export"))
-        self.act_export_csv.setText("📄 " + ("CSV Dosyası Olarak (.csv)..." if is_tr else "As CSV File (.csv)..."))
-        self.act_export_txt.setText("📝 " + ("Metin Dosyası Olarak (.txt)..." if is_tr else "As Text File (.txt)..."))
-        self.act_export_m3u.setText("📺 " + ("M3U Listesi Olarak (.m3u)..." if is_tr else "As M3U Playlist (.m3u)..."))
+        self.menu_export.setTitle("Dışa Aktar" if is_tr else "Export")
+        self.act_export_csv.setText("CSV Dosyası Olarak (.csv)..." if is_tr else "As CSV File (.csv)...")
+        self.act_export_txt.setText("Metin Dosyası Olarak (.txt)..." if is_tr else "As Text File (.txt)...")
+        self.act_export_m3u.setText("M3U Listesi Olarak (.m3u)..." if is_tr else "As M3U Playlist (.m3u)...")
 
         self.act_close_list.setText(t("T127"))
         self.act_close_list.setToolTip(f"{t('T127')} (Ctrl+W)")
@@ -1086,8 +1060,8 @@ class MainWindow(QMainWindow):
         self.act_move_down.setText(t("T110"))
         self.act_move_down.setToolTip(f"{t('T110')} (Alt+Down)")
 
-        self.act_move_to.setText("🎯 " + ("Numaraya Taşı..." if i18n.current_language == "Türkçe" else "Move to Slot #..."))
-        self.act_move_to.setToolTip("🎯 " + ("Kanalı Numaraya Taşı (Ctrl+M)" if i18n.current_language == "Türkçe" else "Move Channel to Slot # (Ctrl+M)"))
+        self.act_move_to.setText("Numaraya Taşı..." if i18n.current_language == "Türkçe" else "Move to Slot #...")
+        self.act_move_to.setToolTip(f"{'Kanalı Numaraya Taşı' if i18n.current_language == 'Türkçe' else 'Move Channel to Slot #'} (Ctrl+M)")
 
         self.act_del_sel.setText(t("T111"))
         self.act_del_sel.setToolTip(f"{t('T111')} (Delete)")
@@ -1101,24 +1075,24 @@ class MainWindow(QMainWindow):
         self.act_import.setText(t("T105"))
         self.act_import.setToolTip(f"{t('T105')} (Ctrl+I)")
 
-        self.act_move_radios_end.setText("📻 " + ("Radyoları Listenin Sonuna Taşı" if is_tr else "Move Radios to End"))
-        self.act_remove_scrambled.setText("🔒 " + ("Şifreli Kanalları Sil..." if is_tr else "Remove Scrambled Channels..."))
-        self.act_normalize_names.setText("🔤 " + ("Kanal İsimlerini Standartlaştır" if is_tr else "Normalize Channel Names"))
-        self.act_remove_duplicates.setText("🔍 " + ("Çift / Mükerrer Kanalları Temizle..." if is_tr else "Remove Duplicate Channels..."))
-        self.act_ref_sort.setText("🔗 " + ("Referans Liste ile Sırala..." if is_tr else "Sort by Reference List..."))
+        self.act_move_radios_end.setText("Radyoları Listenin Sonuna Taşı" if is_tr else "Move Radios to End")
+        self.act_remove_scrambled.setText("Şifreli Kanalları Sil..." if is_tr else "Remove Scrambled Channels...")
+        self.act_normalize_names.setText("Kanal İsimlerini Standartlaştır" if is_tr else "Normalize Channel Names")
+        self.act_remove_duplicates.setText("Çift / Mükerrer Kanalları Temizle..." if is_tr else "Remove Duplicate Channels...")
+        self.act_ref_sort.setText("Referans Liste ile Sırala..." if is_tr else "Sort by Reference List...")
 
         self.act_toggle_sidebar.setText(t("T119"))
         self.act_toggle_sidebar.setToolTip(f"{t('T119')} (F4)")
 
-        self.act_about.setText("ℹ️ " + t("T106"))
+        self.act_about.setText(t("T106"))
         self.act_about.setToolTip(f"{t('T106')} (F1)")
 
-        self.act_shortcuts.setText("⌨️ " + ("Klavye Kısayolları" if is_tr else "Keyboard Shortcuts"))
-        self.act_shortcuts.setToolTip("⌨️ " + ("Klavye Kısayolları (Ctrl+/)" if is_tr else "Keyboard Shortcuts (Ctrl+/)"))
+        self.act_shortcuts.setText("Klavye Kısayolları" if is_tr else "Keyboard Shortcuts")
+        self.act_shortcuts.setToolTip(f"{'Klavye Kısayolları' if is_tr else 'Keyboard Shortcuts'} (Ctrl+/)")
 
-        self.act_report_issue.setText("🐛 " + ("Hata Bildir / Geri Bildirim" if i18n.current_language == "Türkçe" else "Report Issue / Feedback"))
-        self.act_github_repo.setText("⭐ " + ("GitHub Deposu" if i18n.current_language == "Türkçe" else "GitHub Repository"))
-        self.act_check_updates.setText("🔄 " + ("Güncellemeleri Denetle..." if is_tr else "Check for Updates..."))
+        self.act_report_issue.setText("Hata Bildir / Geri Bildirim" if i18n.current_language == "Türkçe" else "Report Issue / Feedback")
+        self.act_github_repo.setText("GitHub Deposu" if i18n.current_language == "Türkçe" else "GitHub Repository")
+        self.act_check_updates.setText("Güncellemeleri Denetle..." if is_tr else "Check for Updates...")
 
         # Subcomponents
         self._rebuild_language_menu()

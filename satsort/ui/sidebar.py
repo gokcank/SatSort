@@ -22,6 +22,7 @@ from PySide6.QtWidgets import (
 from ..core.models import Channel, ChannelType, Polarization
 from ..i18n import t
 from .theme import get_current_theme
+from .icons import get_icon
 
 
 class ChannelParametersWidget(QGroupBox):
@@ -154,8 +155,8 @@ class TransponderChannelsWidget(QGroupBox):
         target_key = selected_channel.transponder_key
         for ch in all_channels:
             if ch.transponder_key == target_key:
-                prefix = "📺 " if ch.channel_type == ChannelType.TV else ("📻 " if ch.channel_type == ChannelType.RADIO else "📡 ")
-                item = QListWidgetItem(f"{prefix}{ch.channel_name}")
+                icon_name = "tv" if ch.channel_type == ChannelType.TV else ("radio" if ch.channel_type == ChannelType.RADIO else "satellite_alt")
+                item = QListWidgetItem(get_icon(icon_name, size=16), ch.channel_name)
                 item.setData(Qt.UserRole, ch)
                 if ch == selected_channel:
                     is_light = get_current_theme() == "light"
