@@ -7,10 +7,10 @@ Depends: libc6
 Section: video
 Priority: optional
 Filename: pool/main/s/satsort/satsort_1.1.0_amd64.deb
-Size: 76439844
-SHA256: d8ecf75824c2d2a1f0c37b8573d7192afdc20855e7a3a8613d881090d34e3b37
-SHA1: 17b775740ea1faa432177a97a2eefb6d666abfea
-MD5sum: b5b33472b8ffe1783d6683aa8be81b32
+Size: 76439124
+SHA256: 859fcd30d4ff25d9caec4a29ba0d011107a67102e4865d018ee3fabf2c796975
+SHA1: 719b5bf75d1f217772f9814380782530a2ec1dcb
+MD5sum: 6a0d0f0227f9266a8bb606975cbb93cd
 Description: Modern Linux Native SatcoDX Channel List Editor
-SatSort is a visual channel list editor for satellite receivers
-using the SatcoDX (.sdx) format.
+ SatSort is a visual channel list editor for satellite receivers
+ using the SatcoDX (.sdx) format.
