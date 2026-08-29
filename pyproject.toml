@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "satsort"
-version = "1.0.1"
+version = "1.1.0"
 description = "Modern Linux Native SatcoDX Channel List Editor"
 readme = "README.md"
 authors = [

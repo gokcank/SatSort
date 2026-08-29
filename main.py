@@ -12,6 +12,7 @@ from PySide6.QtCore import Qt
 
 from satsort.ui import MainWindow, apply_theme
 from satsort.core.parser import read_sdx_file
+from satsort import __version__
 
 
 def main() -> int:
@@ -23,7 +24,7 @@ def main() -> int:
     app = QApplication(sys.argv)
     app.setApplicationName("SatSort")
     app.setOrganizationName("SatSort")
-    app.setApplicationVersion("1.0.0")
+    app.setApplicationVersion(__version__)
 
     # Apply modern dark theme
     apply_theme(app)

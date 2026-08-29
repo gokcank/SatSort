@@ -3,6 +3,24 @@
 Bu projedeki tüm önemli değişiklikler bu dosyada kronolojik olarak listelenmektedir.
 Format, [Keep a Changelog](https://keepachangelog.com/tr/1.0.0/) standartlarına ve [Semantic Versioning](https://semver.org/lang/tr/) kurallarına dayanmaktadır.
 
+## [v1.1.0] - 2026-08-30
+
+### ✨ Yeni Özellikler (New Features)
+* **🎨 Vektörel SVG İkon Seti:** Sistem fontu emojileri tamamen kaldırılarak yerine Google Material Symbols standardında, temaya duyarlı (açık/koyu renk adaptasyonlu) ve yüksek DPI ekranlarda kristal netliğinde vektörel SVG ikon seti entegre edildi.
+* **🔄 Otomatik Güncelleme Kontrolü (Update Checker):** Yardım menüsüne ve Hakkında penceresine eklenen denetleyici ile GitHub Releases üzerinden yeni sürüm kontrolü, sürüm notları görüntüleme ve tek tıkla APT komutunu kopyalama (`sudo apt update && sudo apt install satsort`) özelliği eklendi.
+* **👁️ Görünüm (View) Menüsü:** Masaüstü standartlarına uygun olarak yeni Görünüm menüsü açıldı; Bilgi Paneli (F4), Tema Seçimi ve Araç Çubuğu Görünümü buraya taşındı.
+* **📐 Araç Çubuğu (Toolbar) İyileştirmeleri & Kompakt Mod:**
+  * Sık kullanılan `Numaraya Taşı (Ctrl+M)`, `Yukarı Taşı (Alt+Up)` ve `Aşağı Taşı (Alt+Down)` butonları doğrudan araç çubuğuna eklendi.
+  * Dar ekranlarda buton taşmalarını önlemek için 3 farklı görünüm modu (`İkon Altında Metin`, `İkon Yanında Metin`, `Yalnızca İkon (Kompakt)`) eklendi ve tercihler kalıcı yapılandırıldı.
+* **🌐 Otomatik Sistem Dili Algılama:** Linux masaüstü ortamının sistem yereli (locale) otomatik algılanarak uygulamanın Türkçe, İngilizce, Almanca veya Fransızca başlaması sağlandı; durum çubuğuna hızlı dil değiştirici (`TR ▾`, `EN ▾` vb.) eklendi.
+
+### 🐛 Hata Düzeltmeleri ve İyileştirmeler (Bug Fixes & Improvements)
+* **☀️ Açık Tema & Kontrast Sorunlarının Kesin Çözümü:** Açık temada okunmayan beyaz üstüne beyaz yazı problemleri (yan panel, arama çubuğu ve kanal rozetleri) tamamen giderildi; temaya dinamik adapte olan modern QSS stilleri uygulandı.
+* **🛡️ Hata Bildirimi & Geri Bildirim:** Yardım menüsüne doğrudan GitHub Issues ve repo bağlantıları eklendi.
+* **🧪 Test Kapsamı:** Birim test sayısı 66'dan 81'e yükseltildi (%100 başarı).
+
+---
+
 ## [v1.0.1] - 2026-08-21
 
 ### 🐛 Hata Düzeltmeleri ve İyileştirmeler (Bug Fixes & Improvements)
