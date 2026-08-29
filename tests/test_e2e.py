@@ -100,17 +100,23 @@ class TestSatSortE2E(unittest.TestCase):
                 os.remove(tmp_path)
 
     def test_i18n_language_switching(self):
-        i18n.set_language("Türkçe")
-        self.assertEqual(t("T100"), "Menü")
-        self.assertEqual(t("T101"), "SatcoDx Yükle")
+        orig_lang = i18n.current_language
+        i18n._persist_preferences = False
+        try:
+            i18n.set_language("Türkçe")
+            self.assertEqual(t("T100"), "Menü")
+            self.assertEqual(t("T101"), "SatcoDx Yükle")
 
-        i18n.set_language("English")
-        self.assertEqual(t("T100"), "Menu")
-        self.assertEqual(t("T101"), "Load SatcoDx")
+            i18n.set_language("English")
+            self.assertEqual(t("T100"), "Menu")
+            self.assertEqual(t("T101"), "Load SatcoDx")
 
-        i18n.set_language("Français")
-        self.assertEqual(t("T100"), "Menu")
-        self.assertEqual(t("T101"), "Charger un fichier SatcoDx")
+            i18n.set_language("Français")
+            self.assertEqual(t("T100"), "Menu")
+            self.assertEqual(t("T101"), "Charger un fichier SatcoDx")
+        finally:
+            i18n._persist_preferences = True
+            i18n.set_language(orig_lang)
 
     def test_batch_workflow_e2e(self):
         from satsort.core.batch_tools import move_radios_to_end, normalize_channel_names, remove_duplicate_channels

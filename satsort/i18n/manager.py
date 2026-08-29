@@ -10,17 +10,73 @@ from pathlib import Path
 from typing import Callable, Dict, List, Optional
 
 
+SUPPORTED_LANGUAGES = ["Türkçe", "English", "Deutsch", "Français", "Español"]
+
+LANGUAGE_CODES = {
+    "Türkçe": "TR",
+    "English": "EN",
+    "Deutsch": "DE",
+    "Français": "FR",
+    "Español": "ES",
+}
+
+LANGUAGE_ENDONYMS = {
+    "Türkçe": "Türkçe",
+    "English": "English",
+    "Deutsch": "Deutsch",
+    "Français": "Français",
+    "Español": "Español",
+}
+
+
+def detect_system_language() -> str:
+    """
+    Detects user's operating system language.
+    Maps:
+      tr_* -> 'Türkçe'
+      de_* -> 'Deutsch'
+      fr_* -> 'Français'
+      es_* -> 'Español'
+      fallback / others -> 'English'
+    """
+    locale_name = ""
+    try:
+        from PySide6.QtCore import QLocale
+        locale_name = QLocale.system().name()
+    except Exception:
+        pass
+    
+    if not locale_name:
+        locale_name = os.environ.get("LC_ALL") or os.environ.get("LANG") or ""
+
+    locale_name = locale_name.lower()
+    if locale_name.startswith("tr"):
+        return "Türkçe"
+    elif locale_name.startswith("de"):
+        return "Deutsch"
+    elif locale_name.startswith("fr"):
+        return "Français"
+    elif locale_name.startswith("es"):
+        return "Español"
+    else:
+        return "English"
+
+
 class I18nManager:
     """Manages multi-language translations and user locale preferences."""
 
-    def __init__(self, default_language: str = "Türkçe") -> None:
-        self._current_language: str = default_language
+    def __init__(self, default_language: Optional[str] = None, config_file: Optional[Path] = None) -> None:
         self._translations: Dict[str, Dict[str, str]] = {}
         self._callbacks: List[Callable[[str], None]] = []
-        self._config_dir = Path.home() / ".config" / "satsort"
-        self._config_file = self._config_dir / "config.json"
+        self._config_file = config_file or (Path.home() / ".config" / "satsort" / "config.json")
+        self._config_dir = self._config_file.parent
+        self._persist_preferences: bool = True
         
         self._load_translations()
+        
+        # Determine language: preference > detected system locale > default
+        initial_lang = default_language or detect_system_language()
+        self._current_language: str = initial_lang
         self._load_user_preference()
 
     def _load_translations(self) -> None:
@@ -57,6 +113,8 @@ class I18nManager:
 
     def _save_user_preference(self) -> None:
         """Persists user language preference to ~/.config/satsort/config.json."""
+        if not self._persist_preferences:
+            return
         try:
             self._config_dir.mkdir(parents=True, exist_ok=True)
             config_data = {}
@@ -72,6 +130,16 @@ class I18nManager:
                 json.dump(config_data, f, indent=2, ensure_ascii=False)
         except Exception:
             pass
+
+    def get_language_code(self, language: Optional[str] = None) -> str:
+        """Returns short code for language (e.g. 'TR', 'EN', 'DE', 'FR', 'ES')."""
+        lang = language or self._current_language
+        return LANGUAGE_CODES.get(lang, "EN")
+
+    def get_language_endonym(self, language: Optional[str] = None) -> str:
+        """Returns native name (endonym) of the language."""
+        lang = language or self._current_language
+        return LANGUAGE_ENDONYMS.get(lang, lang)
 
     def get_supported_languages(self) -> List[str]:
         """Returns the list of all available languages."""
