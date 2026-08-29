@@ -33,7 +33,7 @@ def extract_deb_control(deb_path: str) -> dict:
     current_key = None
     for line in res.stdout.splitlines():
         if (line.startswith(" ") or line.startswith("\t")) and current_key:
-            info[current_key] += "\n" + line.strip()
+            info[current_key] += "\n " + line.strip()
         elif ":" in line:
             parts = line.split(":", 1)
             current_key = parts[0].strip()
@@ -75,6 +75,17 @@ def build_repo(deb_dir: str, output_repo_dir: str):
             deb_ver = deb_name.split('_')[1]
         if not deb_ver:
             deb_ver = '1.1.0'
+
+        # Format multiline description ensuring Debian policy compliant leading spaces
+        raw_desc = control.get('Description', 'Modern Linux Native SatcoDX Channel List Editor')
+        desc_lines = []
+        for i, l in enumerate(raw_desc.splitlines()):
+            stripped = l.strip()
+            if i == 0:
+                desc_lines.append(stripped)
+            else:
+                desc_lines.append(f" {stripped}" if stripped else " .")
+        formatted_desc = "\n".join(desc_lines)
         
         entry_lines = [
             f"Package: {control.get('Package', 'satsort')}",
@@ -90,7 +101,7 @@ def build_repo(deb_dir: str, output_repo_dir: str):
             f"SHA256: {sha256}",
             f"SHA1: {sha1}",
             f"MD5sum: {md5}",
-            f"Description: {control.get('Description', 'Modern Linux Native SatcoDX Channel List Editor')}",
+            f"Description: {formatted_desc}",
         ]
         packages_entries.append("\n".join(entry_lines))
 
