@@ -21,6 +21,8 @@ from PySide6.QtWidgets import (
     QStatusBar,
     QLabel,
     QToolBar,
+    QToolButton,
+    QMenu,
 )
 
 from ..core.models import Channel
@@ -362,7 +364,9 @@ class MainWindow(QMainWindow):
     def _rebuild_language_menu(self) -> None:
         self.menu_lang.clear()
         for lang in i18n.get_supported_languages():
-            act = QAction(lang, self, checkable=True)
+            endonym = i18n.get_language_endonym(lang)
+            code = i18n.get_language_code(lang)
+            act = QAction(f"{endonym} ({code})", self, checkable=True)
             act.setChecked(lang == i18n.current_language)
             act.triggered.connect(lambda checked, l=lang: i18n.set_language(l))
             self.menu_lang.addAction(act)
@@ -374,8 +378,51 @@ class MainWindow(QMainWindow):
         self.lbl_file_info = QLabel("Hazır")
         self.lbl_channel_count = QLabel("Kanal: 0 | İşaretli: 0")
 
+        # Quick Language Selector Button in Status Bar
+        self.btn_lang = QToolButton()
+        self.btn_lang.setPopupMode(QToolButton.ToolButtonPopupMode.InstantPopup)
+        self.btn_lang.setCursor(Qt.PointingHandCursor)
+        self.btn_lang.setToolTip("Dil Seçimi / Select Language")
+        self.btn_lang.setStyleSheet("""
+            QToolButton {
+                background: transparent;
+                border: 1px solid #334155;
+                border-radius: 4px;
+                padding: 2px 6px;
+                font-size: 11px;
+                font-weight: bold;
+                color: #38bdf8;
+                margin-left: 6px;
+            }
+            QToolButton:hover {
+                background-color: #1e293b;
+                border-color: #38bdf8;
+            }
+            QToolButton::menu-indicator {
+                image: none;
+                width: 0px;
+            }
+        """)
+        self.status_lang_menu = QMenu(self)
+        self.btn_lang.setMenu(self.status_lang_menu)
+        self._update_status_lang_button()
+
         self.status_bar.addWidget(self.lbl_file_info, stretch=1)
         self.status_bar.addPermanentWidget(self.lbl_channel_count)
+        self.status_bar.addPermanentWidget(self.btn_lang)
+
+    def _update_status_lang_button(self) -> None:
+        """Updates the status bar language button text and its popup menu."""
+        code = i18n.get_language_code()
+        self.btn_lang.setText(f"🌐 {code} ▾")
+        self.status_lang_menu.clear()
+        for lang in i18n.get_supported_languages():
+            endonym = i18n.get_language_endonym(lang)
+            c = i18n.get_language_code(lang)
+            act = QAction(f"{endonym} ({c})", self, checkable=True)
+            act.setChecked(lang == i18n.current_language)
+            act.triggered.connect(lambda checked, l=lang: i18n.set_language(l))
+            self.status_lang_menu.addAction(act)
 
     def _connect_signals(self) -> None:
         self.channel_table.channels_updated.connect(self._update_channel_counts)
@@ -1018,6 +1065,7 @@ class MainWindow(QMainWindow):
 
         # Subcomponents
         self._rebuild_language_menu()
+        self._update_status_lang_button()
         self.search_bar.retranslate_ui()
         self.channel_table.retranslate_ui()
         self.sidebar.retranslate_ui()
