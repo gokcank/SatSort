@@ -80,12 +80,12 @@ QToolButton {
     color: #94a3b8;
     border: 1px solid transparent;
     border-radius: 6px;
-    padding: 1px 4px;
+    padding: 2px 4px;
     margin: 0px 1px;
     font-size: 10.5px;
     font-weight: 500;
-    min-width: 48px;
-    max-width: 90px;
+    min-width: 32px;
+    max-width: 84px;
 }
 
 QToolButton:hover {
@@ -435,12 +435,12 @@ QToolButton {
     color: #64748b;
     border: 1px solid transparent;
     border-radius: 6px;
-    padding: 1px 4px;
+    padding: 2px 4px;
     margin: 0px 1px;
     font-size: 10.5px;
     font-weight: 500;
-    min-width: 48px;
-    max-width: 90px;
+    min-width: 32px;
+    max-width: 84px;
 }
 
 QToolButton:hover {

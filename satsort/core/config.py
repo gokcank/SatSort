@@ -119,5 +119,13 @@ class AppConfig:
         self._data["theme"] = theme
         self.save()
 
+    # --- Toolbar Style ---
+    def get_toolbar_style(self) -> str:
+        return str(self._data.get("toolbar_style", "text_under_icon"))
+
+    def set_toolbar_style(self, style: str) -> None:
+        self._data["toolbar_style"] = style
+        self.save()
+
 
 config = AppConfig.get_instance()

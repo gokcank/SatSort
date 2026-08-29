@@ -294,6 +294,26 @@ class MainWindow(QMainWindow):
         self.menu_lang = self.menu_settings.addMenu("🌐 " + ("Dil" if i18n.current_language == "Türkçe" else "Language"))
         self._rebuild_language_menu()
 
+        # Toolbar Appearance Submenu
+        self.menu_toolbar_style = self.menu_settings.addMenu("📐 " + ("Araç Çubuğu Görünümü" if is_tr else "Toolbar Appearance"))
+        self.tb_style_group = QActionGroup(self)
+        self.tb_style_group.setExclusive(True)
+
+        self.act_tb_text_under = QAction("İkon Altında Metin" if is_tr else "Text Under Icons", self, checkable=True)
+        self.act_tb_text_under.triggered.connect(lambda: self._set_toolbar_style("text_under_icon"))
+        self.tb_style_group.addAction(self.act_tb_text_under)
+        self.menu_toolbar_style.addAction(self.act_tb_text_under)
+
+        self.act_tb_text_beside = QAction("İkon Yanında Metin" if is_tr else "Text Beside Icons", self, checkable=True)
+        self.act_tb_text_beside.triggered.connect(lambda: self._set_toolbar_style("text_beside_icon"))
+        self.tb_style_group.addAction(self.act_tb_text_beside)
+        self.menu_toolbar_style.addAction(self.act_tb_text_beside)
+
+        self.act_tb_icon_only = QAction("Yalnızca İkon (Kompakt)" if is_tr else "Icons Only (Compact)", self, checkable=True)
+        self.act_tb_icon_only.triggered.connect(lambda: self._set_toolbar_style("icon_only"))
+        self.tb_style_group.addAction(self.act_tb_icon_only)
+        self.menu_toolbar_style.addAction(self.act_tb_icon_only)
+
         self.menu_settings.addSeparator()
 
         # Auto-Backup Toggle
@@ -334,13 +354,12 @@ class MainWindow(QMainWindow):
         self.act_github_repo.triggered.connect(lambda: QDesktopServices.openUrl(QUrl("https://github.com/gokcank/SatSort")))
         self.menu_help.addAction(self.act_github_repo)
 
-        # Top Toolbar (Modern Stitch Vertical Icon-Above-Text Layout)
+        # Top Toolbar
         self.toolbar = QToolBar("Main Toolbar")
-        self.toolbar.setToolButtonStyle(Qt.ToolButtonTextUnderIcon)
         self.toolbar.setIconSize(QSize(20, 20))
         self.toolbar.setMovable(False)
-        self.toolbar.setFixedHeight(48)
         self.addToolBar(self.toolbar)
+        self._set_toolbar_style(config.get_toolbar_style())
 
         # Group 1: File Operations
         self.toolbar.addAction(self.act_open)
@@ -981,6 +1000,24 @@ class MainWindow(QMainWindow):
             selected = self.channel_table.get_selected_channel()
             self.sidebar.set_channel(selected, self.channel_table.get_channels())
 
+    def _set_toolbar_style(self, style_name: str) -> None:
+        """Configures toolbar display mode between text_under_icon, text_beside_icon, and icon_only."""
+        if style_name == "icon_only":
+            self.toolbar.setToolButtonStyle(Qt.ToolButtonIconOnly)
+            self.toolbar.setFixedHeight(36)
+            self.act_tb_icon_only.setChecked(True)
+        elif style_name == "text_beside_icon":
+            self.toolbar.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
+            self.toolbar.setFixedHeight(36)
+            self.act_tb_text_beside.setChecked(True)
+        else:
+            self.toolbar.setToolButtonStyle(Qt.ToolButtonTextUnderIcon)
+            self.toolbar.setFixedHeight(48)
+            self.act_tb_text_under.setChecked(True)
+            style_name = "text_under_icon"
+
+        config.set_toolbar_style(style_name)
+
     def show_about(self) -> None:
         AboutDialog(self).exec()
 
@@ -1001,6 +1038,12 @@ class MainWindow(QMainWindow):
         self.menu_theme.setTitle("🎨 " + ("Tema" if i18n.current_language == "Türkçe" else ("Theme" if i18n.current_language == "English" else "Theme")))
         self.menu_lang.setTitle("🌐 " + ("Dil" if i18n.current_language == "Türkçe" else ("Language" if i18n.current_language == "English" else "Sprache")))
         self.menu_help.setTitle("Yardım" if i18n.current_language == "Türkçe" else ("Help" if i18n.current_language == "English" else ("Hilfe" if i18n.current_language == "Deutsch" else "Aide")))
+
+        is_tr = i18n.current_language == "Türkçe"
+        self.menu_toolbar_style.setTitle("📐 " + ("Araç Çubuğu Görünümü" if is_tr else "Toolbar Appearance"))
+        self.act_tb_text_under.setText("İkon Altında Metin" if is_tr else "Text Under Icons")
+        self.act_tb_text_beside.setText("İkon Yanında Metin" if is_tr else "Text Beside Icons")
+        self.act_tb_icon_only.setText("Yalnızca İkon (Kompakt)" if is_tr else "Icons Only (Compact)")
 
         # Theme actions
         self.act_dark_theme.setText("🌙 " + ("Koyu Tema" if i18n.current_language == "Türkçe" else "Dark Theme"))
