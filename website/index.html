@@ -33,6 +33,7 @@
       <ul class="nav-links">
         <li><a href="#ozellikler" class="nav-link">Özellikler</a></li>
         <li><a href="#uyumluluk" class="nav-link">TV Uyumluluğu</a></li>
+        <li><a href="#demo" class="nav-link">Canlı Demo</a></li>
         <li><a href="#kurulum" class="nav-link">Kurulum</a></li>
         <li>
           <a href="https://github.com/gokcank/SatSort" target="_blank" rel="noopener noreferrer" class="nav-btn">
@@ -283,6 +284,80 @@
               <h4>Yüksek Hız ve Sıfır Donma</h4>
               <p>Binlerce kanallı listeleri anında yükler ve bellek şişmesi yapmadan akıcı bir deneyim sunar.</p>
             </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Interactive Live Demo Section -->
+  <section id="demo" class="section">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-tag">Canlı Önizleme</div>
+        <h2 class="section-title">İndirmeden Önce Tarayıcınızda Deneyin</h2>
+        <p class="section-desc">
+          Kendi .sdx dosyanızı sürükleyip bırakın veya örnek listeyle SatSort'un kanal ayrıştırma hızını doğrudan webde test edin.
+        </p>
+      </div>
+
+      <div class="demo-card">
+        <!-- Dropzone -->
+        <div class="demo-dropzone" id="demo-dropzone">
+          <input type="file" id="demo-file-input" accept=".sdx,.txt" style="display: none;">
+          <div class="dropzone-content">
+            <div class="dropzone-icon">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="17 8 12 3 7 8"></polyline>
+                <line x1="12" y1="3" x2="12" y2="15"></line>
+              </svg>
+            </div>
+            <h3 class="dropzone-title">Kendi <code>.sdx</code> dosyanızı buraya sürükleyin</h3>
+            <p class="dropzone-subtitle">veya dosya seçmek için tıklayın (Dosyanız sunucuya yüklenmez; tamamen tarayıcınızın belleğinde güvenle ve anında çözümlenir)</p>
+            <div class="dropzone-actions">
+              <button type="button" id="demo-choose-btn" class="btn btn-secondary">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+                Dosya Seç
+              </button>
+              <span class="dropzone-or">veya</span>
+              <button type="button" id="demo-sample-btn" class="btn btn-primary">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+                Örnek Türksat Listesini Yükle
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Table Viewer & Controls -->
+        <div class="demo-viewer" id="demo-viewer" style="display: none;">
+          <div class="demo-toolbar">
+            <div class="demo-stats-badge" id="demo-stats">
+              <span class="badge-dot"></span>
+              <span id="demo-stats-text">24 Kanal Yüklendi</span>
+            </div>
+            <div class="demo-search-box">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+              <input type="text" id="demo-search-input" placeholder="Kanal veya frekans ara... (örn. TRT, Haber, 12053)">
+            </div>
+          </div>
+
+          <div class="demo-table-wrapper">
+            <table class="demo-table">
+              <thead>
+                <tr>
+                  <th style="width: 60px;">No</th>
+                  <th>Kanal Adı</th>
+                  <th style="width: 75px;">Tür</th>
+                  <th>Uydu</th>
+                  <th>Frekans</th>
+                  <th style="width: 60px;">Pol</th>
+                  <th>Sembol</th>
+                </tr>
+              </thead>
+              <tbody id="demo-table-body">
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
