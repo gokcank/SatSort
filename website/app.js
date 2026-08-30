@@ -315,6 +315,8 @@ SATCODX105TURKSAT 42E       RMPG41120150000KRAL FM 0420TUR     ______275003_____
 
       const tag = release.tag_name;
 
+      currentReleaseTag = tag;
+
       // 1. Update version badge in navbar
       const versionBadge = document.getElementById("release-version-badge");
       if (versionBadge) {
@@ -328,33 +330,24 @@ SATCODX105TURKSAT 42E       RMPG41120150000KRAL FM 0420TUR     ______275003_____
 
       // 3. Update Hero AppImage button
       const heroBtn = document.getElementById("hero-appimage-btn");
-      const heroText = document.getElementById("hero-appimage-text");
       if (appImageAsset && heroBtn) {
         heroBtn.href = appImageAsset.browser_download_url;
-      }
-      if (heroText) {
-        heroText.textContent = `AppImage İndir (${tag})`;
       }
 
       // 4. Update Tab AppImage button
       const tabAppImageBtn = document.getElementById("tab-appimage-download-btn");
-      const tabAppImageText = document.getElementById("tab-appimage-download-text");
       if (appImageAsset && tabAppImageBtn) {
         tabAppImageBtn.href = appImageAsset.browser_download_url;
-      }
-      if (tabAppImageText) {
-        tabAppImageText.textContent = `Doğrudan AppImage İndir (${tag})`;
       }
 
       // 5. Update Tab .deb button
       const tabDebBtn = document.getElementById("tab-deb-download-btn");
-      const tabDebText = document.getElementById("tab-deb-download-text");
       if (debAsset && tabDebBtn) {
         tabDebBtn.href = debAsset.browser_download_url;
       }
-      if (tabDebText) {
-        tabDebText.textContent = `Doğrudan .deb Paketini İndir (${tag})`;
-      }
+
+      // Refresh localized button labels with new tag
+      setLanguage(currentLang);
     } catch (err) {
       console.debug("GitHub Release API offline or rate limited, using static fallbacks:", err);
     }
@@ -381,6 +374,92 @@ SATCODX105TURKSAT 42E       RMPG41120150000KRAL FM 0420TUR     ______275003_____
       console.debug("GitHub Repo Stats API offline or rate limited:", err);
     }
   }
+
+  // 6. Multilingual Localization Controller (TR, EN, DE, FR, ES)
+  let currentReleaseTag = "v1.1.0";
+  let currentLang = "tr";
+
+  function setLanguage(lang) {
+    if (typeof LOCALES === "undefined" || !LOCALES[lang]) {
+      lang = "tr";
+    }
+    currentLang = lang;
+    localStorage.setItem("satsort_lang", lang);
+    document.documentElement.setAttribute("lang", lang);
+
+    const langSelect = document.getElementById("lang-select");
+    if (langSelect) {
+      langSelect.value = lang;
+    }
+
+    const dict = LOCALES[lang];
+    if (!dict) return;
+
+    // 1. Text elements
+    document.querySelectorAll("[data-i18n]").forEach((el) => {
+      const key = el.getAttribute("data-i18n");
+      if (dict[key]) {
+        el.textContent = dict[key];
+      }
+    });
+
+    // 2. Titles and aria-labels
+    document.querySelectorAll("[data-i18n-title]").forEach((el) => {
+      const key = el.getAttribute("data-i18n-title");
+      if (dict[key]) {
+        el.setAttribute("title", dict[key]);
+        el.setAttribute("aria-label", dict[key]);
+      }
+    });
+
+    // 3. Placeholders
+    document.querySelectorAll("[data-i18n-placeholder]").forEach((el) => {
+      const key = el.getAttribute("data-i18n-placeholder");
+      if (dict[key]) {
+        el.setAttribute("placeholder", dict[key]);
+      }
+    });
+
+    // 4. Update download buttons with localized text + tag
+    const heroText = document.getElementById("hero-appimage-text");
+    if (heroText && dict.hero_btn_appimage) {
+      heroText.textContent = `${dict.hero_btn_appimage} (${currentReleaseTag})`;
+    }
+
+    const tabAppImageText = document.getElementById("tab-appimage-download-text");
+    if (tabAppImageText && dict.tab_appimage_btn) {
+      tabAppImageText.textContent = `${dict.tab_appimage_btn} (${currentReleaseTag})`;
+    }
+
+    const tabDebText = document.getElementById("tab-deb-download-text");
+    if (tabDebText && dict.tab_deb_btn) {
+      tabDebText.textContent = `${dict.tab_deb_btn} (${currentReleaseTag})`;
+    }
+  }
+
+  const langSelect = document.getElementById("lang-select");
+  if (langSelect) {
+    langSelect.addEventListener("change", (e) => {
+      setLanguage(e.target.value);
+    });
+  }
+
+  // Detect preferred language: saved -> navigator -> fallback (tr)
+  function detectInitialLanguage() {
+    const saved = localStorage.getItem("satsort_lang");
+    if (saved && typeof LOCALES !== "undefined" && LOCALES[saved]) {
+      return saved;
+    }
+    const navLang = (navigator.language || navigator.userLanguage || "tr").toLowerCase();
+    if (navLang.startsWith("en")) return "en";
+    if (navLang.startsWith("de")) return "de";
+    if (navLang.startsWith("fr")) return "fr";
+    if (navLang.startsWith("es")) return "es";
+    return "tr";
+  }
+
+  // Initialize language
+  setLanguage(detectInitialLanguage());
 
   // Trigger live updates asynchronously
   loadLatestRelease();
