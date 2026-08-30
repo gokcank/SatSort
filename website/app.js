@@ -56,4 +56,29 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
   });
+
+  // 3. Theme Toggle (Dark / Light)
+  const themeToggleBtn = document.getElementById("theme-toggle-btn");
+
+  function applyTheme(theme) {
+    document.documentElement.setAttribute("data-theme", theme);
+    localStorage.setItem("satsort_theme", theme);
+  }
+
+  if (themeToggleBtn) {
+    themeToggleBtn.addEventListener("click", () => {
+      const currentTheme = document.documentElement.getAttribute("data-theme") || "dark";
+      const nextTheme = currentTheme === "dark" ? "light" : "dark";
+      applyTheme(nextTheme);
+    });
+  }
+
+  // Listen to OS scheme changes if user hasn't explicitly set a preference
+  if (window.matchMedia) {
+    window.matchMedia("(prefers-color-scheme: light)").addEventListener("change", (e) => {
+      if (!localStorage.getItem("satsort_theme")) {
+        applyTheme(e.matches ? "light" : "dark");
+      }
+    });
+  }
 });
