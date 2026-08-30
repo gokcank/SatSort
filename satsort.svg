@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f172a" />
+      <stop offset="100%" stop-color="#1e293b" />
+    </linearGradient>
+    <linearGradient id="dishGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8" />
+      <stop offset="100%" stop-color="#0284c7" />
+    </linearGradient>
+    <linearGradient id="accentGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f59e0b" />
+      <stop offset="100%" stop-color="#d97706" />
+    </linearGradient>
+  </defs>
+
+  <!-- App Rounded Background Card -->
+  <rect x="4" y="4" width="120" height="120" rx="28" fill="url(#bgGrad)" stroke="#334155" stroke-width="3" />
+
+  <!-- Signal Waves -->
+  <path d="M 78 28 A 45 45 0 0 1 106 56" fill="none" stroke="#38bdf8" stroke-width="4" stroke-linecap="round" opacity="0.6" />
+  <path d="M 88 20 A 60 60 0 0 1 116 48" fill="none" stroke="#38bdf8" stroke-width="4" stroke-linecap="round" opacity="0.3" />
+
+  <!-- Satellite Dish Main Body -->
+  <path d="M 32 78 C 30 52 50 32 76 34 C 70 60 58 72 32 78 Z" fill="url(#dishGrad)" />
+  
+  <!-- Dish Arm & LNB Feed Horn -->
+  <line x1="56" y1="54" x2="82" y2="40" stroke="#f8fafc" stroke-width="4" stroke-linecap="round" />
+  <circle cx="84" cy="39" r="6" fill="url(#accentGrad)" stroke="#ffffff" stroke-width="1.5" />
+
+  <!-- Stand / Mounting Base -->
+  <path d="M 46 68 L 36 94 L 54 94 L 46 68" fill="#64748b" />
+  <rect x="26" y="94" width="40" height="6" rx="3" fill="#94a3b8" />
+
+  <!-- Sort List Bars Indicator -->
+  <rect x="74" y="74" width="34" height="5" rx="2.5" fill="#38bdf8" />
+  <rect x="74" y="83" width="26" height="5" rx="2.5" fill="#38bdf8" opacity="0.8" />
+  <rect x="74" y="92" width="18" height="5" rx="2.5" fill="#38bdf8" opacity="0.6" />
+</svg>
