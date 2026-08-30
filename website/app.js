@@ -279,4 +279,110 @@ SATCODX105TURKSAT 42E       RMPG41120150000KRAL FM 0420TUR     ______275003_____
       renderTable(filtered);
     });
   }
+
+  // 5. Live GitHub API Integration (Latest Release & Repo Stats)
+  const CACHE_TTL_MS = 3600 * 1000; // 1 hour in milliseconds
+
+  async function fetchWithCache(url, cacheKey) {
+    const cached = localStorage.getItem(cacheKey);
+    if (cached) {
+      try {
+        const parsed = JSON.parse(cached);
+        if (Date.now() - parsed.timestamp < CACHE_TTL_MS) {
+          return parsed.data;
+        }
+      } catch (e) {
+        localStorage.removeItem(cacheKey);
+      }
+    }
+
+    const response = await fetch(url, { headers: { Accept: "application/vnd.github.v3+json" } });
+    if (!response.ok) {
+      throw new Error(`GitHub API error: ${response.status}`);
+    }
+    const data = await response.json();
+    localStorage.setItem(cacheKey, JSON.stringify({ timestamp: Date.now(), data }));
+    return data;
+  }
+
+  async function loadLatestRelease() {
+    try {
+      const release = await fetchWithCache(
+        "https://api.github.com/repos/gokcank/SatSort/releases/latest",
+        "satsort_gh_release"
+      );
+      if (!release || !release.tag_name) return;
+
+      const tag = release.tag_name;
+
+      // 1. Update version badge in navbar
+      const versionBadge = document.getElementById("release-version-badge");
+      if (versionBadge) {
+        versionBadge.textContent = tag;
+      }
+
+      // 2. Find AppImage and .deb assets
+      const assets = release.assets || [];
+      const appImageAsset = assets.find((a) => a.name.endsWith(".AppImage"));
+      const debAsset = assets.find((a) => a.name.endsWith(".deb") && !a.name.includes("1.0.1"));
+
+      // 3. Update Hero AppImage button
+      const heroBtn = document.getElementById("hero-appimage-btn");
+      const heroText = document.getElementById("hero-appimage-text");
+      if (appImageAsset && heroBtn) {
+        heroBtn.href = appImageAsset.browser_download_url;
+      }
+      if (heroText) {
+        heroText.textContent = `AppImage İndir (${tag})`;
+      }
+
+      // 4. Update Tab AppImage button
+      const tabAppImageBtn = document.getElementById("tab-appimage-download-btn");
+      const tabAppImageText = document.getElementById("tab-appimage-download-text");
+      if (appImageAsset && tabAppImageBtn) {
+        tabAppImageBtn.href = appImageAsset.browser_download_url;
+      }
+      if (tabAppImageText) {
+        tabAppImageText.textContent = `Doğrudan AppImage İndir (${tag})`;
+      }
+
+      // 5. Update Tab .deb button
+      const tabDebBtn = document.getElementById("tab-deb-download-btn");
+      const tabDebText = document.getElementById("tab-deb-download-text");
+      if (debAsset && tabDebBtn) {
+        tabDebBtn.href = debAsset.browser_download_url;
+      }
+      if (tabDebText) {
+        tabDebText.textContent = `Doğrudan .deb Paketini İndir (${tag})`;
+      }
+    } catch (err) {
+      console.debug("GitHub Release API offline or rate limited, using static fallbacks:", err);
+    }
+  }
+
+  async function loadRepoStats() {
+    try {
+      const repo = await fetchWithCache(
+        "https://api.github.com/repos/gokcank/SatSort",
+        "satsort_gh_repo"
+      );
+      if (!repo) return;
+
+      const stars = repo.stargazers_count;
+      if (typeof stars === "number") {
+        const starPill = document.getElementById("gh-stars-pill");
+        const starCount = document.getElementById("gh-stars-count");
+        if (starPill && starCount) {
+          starCount.textContent = stars;
+          starPill.style.display = "inline-flex";
+        }
+      }
+    } catch (err) {
+      console.debug("GitHub Repo Stats API offline or rate limited:", err);
+    }
+  }
+
+  // Trigger live updates asynchronously
+  loadLatestRelease();
+  loadRepoStats();
 });

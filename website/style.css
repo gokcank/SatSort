@@ -162,6 +162,20 @@ body, .navbar, .feature-card, .tv-card, .install-container, .btn-secondary, .moc
   background-color: var(--card-hover);
 }
 
+.gh-star-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background-color: rgba(245, 158, 11, 0.15);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  color: var(--warning);
+  padding: 2px 7px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  margin-left: 2px;
+}
+
 .icon-btn {
   display: inline-flex;
   align-items: center;
