@@ -184,14 +184,28 @@ SATCODX105TURKSAT 42E       RMPG41120150000KRAL FM 0420TUR     ______275003_____
       .replace(/"/g, "&quot;");
   }
 
+  let currentLoadedChannels = null;
+  let currentLoadedSource = "";
+
+  function updateDemoStats() {
+    if (!statsText || !currentLoadedChannels) return;
+    const dict = (typeof LOCALES !== "undefined" && LOCALES[currentLang]) || {};
+    const tvCount = currentLoadedChannels.filter((c) => !c.isRadio).length;
+    const radioCount = currentLoadedChannels.filter((c) => c.isRadio).length;
+    const count = currentLoadedChannels.length;
+    if (dict.demo_channels_loaded) {
+      statsText.textContent = `${dict.demo_channels_loaded.replace("{count}", count)} (${tvCount} TV, ${radioCount} Radio) — ${currentLoadedSource}`;
+    } else {
+      statsText.textContent = `${count} Kanal (${tvCount} TV, ${radioCount} Radyo) - ${currentLoadedSource}`;
+    }
+  }
+
   function displayChannels(channels, sourceLabel) {
     parsedChannels = channels;
-    const tvCount = channels.filter((c) => !c.isRadio).length;
-    const radioCount = channels.filter((c) => c.isRadio).length;
+    currentLoadedChannels = channels;
+    currentLoadedSource = sourceLabel;
 
-    if (statsText) {
-      statsText.textContent = `${channels.length} Kanal (${tvCount} TV, ${radioCount} Radyo) - ${sourceLabel}`;
-    }
+    updateDemoStats();
 
     if (searchInput) {
       searchInput.value = "";
@@ -399,9 +413,15 @@ SATCODX105TURKSAT 42E       RMPG41120150000KRAL FM 0420TUR     ______275003_____
     document.querySelectorAll("[data-i18n]").forEach((el) => {
       const key = el.getAttribute("data-i18n");
       if (dict[key]) {
-        el.textContent = dict[key];
+        if (dict[key].includes("<")) {
+          el.innerHTML = dict[key];
+        } else {
+          el.textContent = dict[key];
+        }
       }
     });
+
+    updateDemoStats();
 
     // 2. Titles and aria-labels
     document.querySelectorAll("[data-i18n-title]").forEach((el) => {
