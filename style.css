@@ -608,13 +608,19 @@ body, .navbar, .feature-card, .tv-card, .install-container, .btn-secondary, .moc
 }
 
 .brand-tag {
-  background-color: #0f172a;
+  background-color: var(--card-bg);
   border: 1px solid var(--border);
-  color: var(--text);
+  color: var(--accent);
   font-weight: 600;
   font-size: 0.95rem;
   padding: 8px 18px;
   border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.brand-tag:hover {
+  border-color: var(--accent);
+  background-color: var(--accent-glow);
 }
 
 .safety-grid {
