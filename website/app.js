@@ -435,6 +435,12 @@ SATCODX105TURKSAT 42E       RMPG41120150000KRAL FM 0420TUR     ______275003_____
     if (tabDebText && dict.tab_deb_btn) {
       tabDebText.textContent = `${dict.tab_deb_btn} (${currentReleaseTag})`;
     }
+
+    // 5. Update Mockup Screenshot to match the active language
+    const mockupImg = document.getElementById("mockup-img");
+    if (mockupImg) {
+      mockupImg.src = `app_screenshot_${lang}.png`;
+    }
   }
 
   const langSelect = document.getElementById("lang-select");
