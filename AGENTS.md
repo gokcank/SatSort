@@ -35,9 +35,6 @@ Linux desktop editor (Python + Qt6/PySide6) for SatcoDX (`.sdx`) satellite chann
 
 ## Open items
 - Planned new i18n keys T146–T155 collide with existing keys (e.g. T146, T153): renumber before adding.
-- v1.2.0 backlog: missing i18n strings, remove inline language branches, Spanish "select all" fallback shows French,
-  hard-coded "Hata" titles, emojis in Shortcuts/About dialogs, stale `release.yml` version fallback,
-  APT `Installed-Size` mismatch (`build_deb.sh` + `scripts/build_apt_repo.py`).
 - Website ideas (not committed): shortcuts modal, TV setup stepper, PWA, command palette.
 
 ## More context
