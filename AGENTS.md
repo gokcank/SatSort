@@ -30,6 +30,7 @@ Linux desktop editor (Python + Qt6/PySide6) for SatcoDX (`.sdx`) satellite chann
 - Work through the terminal (no IDE GUI instructions).
 
 ## Status (as of 2026-11-07)
+- Project status: **maintenance** (set 2026-11-18; source of truth: the brain page).
 - Latest release v1.1.0 (2026-08-29). `main` = `1f37f70`, in sync with origin.
 - No virtualenv on this machine yet; tests not run since the OS reinstall.
 
