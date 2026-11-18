@@ -35,6 +35,7 @@ Linux desktop editor (Python + Qt6/PySide6) for SatcoDX (`.sdx`) satellite chann
 - No virtualenv on this machine yet; tests not run since the OS reinstall.
 
 ## Open items
+- CI red since 2026-11-07 (last green 2026-08-30): the test step crashes with `Fatal Python error: none_dealloc` (exit 134) in a C extension, on Python 3.10 and 3.11. Commits since then touched only this file, so likely a changed dependency on the runner (unpinned PySide6?); not verified. Investigate in a project session.
 - Planned new i18n keys T146–T155 collide with existing keys (e.g. T146, T153): renumber before adding.
 - Website ideas (not committed): shortcuts modal, TV setup stepper, PWA, command palette.
 
